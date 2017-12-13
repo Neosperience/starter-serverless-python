@@ -12,7 +12,7 @@ test:
 
 deploy-experiments:
   stage: deploy
-  image: aturner/node-python
+  image: beevelop/nodejs-python
   environment:
     name: experiments
     url: https://starter-python.experiments.neosperiencecloud.com/v1/entity
