@@ -32,7 +32,7 @@ custom:
         resultTtlInSeconds: 300
         identitySource: method.request.header.Authorization
     pythonRequirements:
-        pythonBin: python3
+        pythonBin: /usr/bin/python3
         # dockerizePip: true
         # noDeploy: # non funziona
         #     - mccabe
