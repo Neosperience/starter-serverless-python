@@ -1,4 +1,4 @@
-service: dario-python-service-v1
+service: starter-serverless-python-v1
 
 package:
     exclude:
