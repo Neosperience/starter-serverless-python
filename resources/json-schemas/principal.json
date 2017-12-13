@@ -1,0 +1,26 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Principal",
+    "description": "Neosperience Principal",
+    "type": "object",
+    "properties": {
+        "organizationId": {
+            "title": "Organization ID",
+            "description": "Organization ID",
+            "type": "string"
+        },
+        "roles": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "uniqueItems": true
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "additionalProperties": true,
+    "required": ["organizationId", "roles"]
+}

@@ -1,0 +1,64 @@
+service: dario-python-service-v1
+
+package:
+    exclude:
+        - .git/**
+        - .serveless/**
+        - node_modules/**
+        - temp/**
+        - src/spec/**
+        - .*
+        - deploy.sh
+        - package.json
+        - requirements.txt
+        - tox.ini
+    include:
+        - config/config.json
+
+provider:
+    name: aws
+    runtime: python3.6
+    stage: ${env:SERVERLESS_STAGE}
+    region: ${env:SERVERLESS_REGION}
+    versionFunctions: false
+
+plugins:
+    - serverless-python-requirements
+
+custom:
+    accountId: ${env:SERVERLESS_ACCOUNT_ID}
+    authorizer:
+        arn: arn:aws:lambda:${self:provider.region}:${self:custom.accountId}:function:nsp-identity-services-v1-${self:provider.stage}-custom-authorizer
+        resultTtlInSeconds: 300
+        identitySource: method.request.header.Authorization
+    pythonRequirements:
+        dockerizePip: true
+        noDeploy: # non funziona
+            - mccabe
+            - pycodestyle
+            - pydocstyle
+            - pyflakes
+            - pylama
+            - six
+
+# resources:
+#     Resources:
+#         BasePathMapping:
+#             Type: "AWS::ApiGateway::BasePathMapping"
+#             Properties:
+#                 BasePath: v1
+#                 DomainName: ${env:SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME}
+#                 RestApiId:
+#                     Ref: ApiGatewayRestApi
+#                 Stage: ${self:provider.stage}
+
+functions:
+    get-entity:
+        handler: src/entity/lambda/get_entity.handler
+        timeout: 30
+        events:
+            - http:
+                path: entity/{uuid}
+                method: get
+                cors: true
+                authorizer: ${self:custom.authorizer}

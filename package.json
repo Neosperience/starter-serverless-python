@@ -1,0 +1,21 @@
+{
+  "name": "dario-python-service",
+  "version": "0.1.0",
+  "description": "A starter REST service in Python",
+  "contributors": [
+    "Dario Morandini <dario.morandini@neosperience.com>"
+  ],
+  "scripts": {
+    "sls": "sls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.neosperience.com:neosperience-cloud/dario-python-service.git"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "lodash": "^4.17.4",
+    "serverless": "^1.24.1",
+    "serverless-python-requirements": "^3.0.10"
+  }
+}
