@@ -28,6 +28,7 @@ deploy-experiments:
     CONFIG_LOGGER_FILE_OPTIONS_FILENAME: logs/dev.log
   before_script:
     - node -v
+    - which python3
     - python3 -V
     - npm prune
     - npm update -q
