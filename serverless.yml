@@ -32,7 +32,7 @@ custom:
         resultTtlInSeconds: 300
         identitySource: method.request.header.Authorization
     pythonRequirements:
-        dockerizePip: true
+        #dockerizePip: true
         noDeploy: # non funziona
             - mccabe
             - pycodestyle
@@ -41,16 +41,16 @@ custom:
             - pylama
             - six
 
-# resources:
-#     Resources:
-#         BasePathMapping:
-#             Type: "AWS::ApiGateway::BasePathMapping"
-#             Properties:
-#                 BasePath: v1
-#                 DomainName: ${env:SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME}
-#                 RestApiId:
-#                     Ref: ApiGatewayRestApi
-#                 Stage: ${self:provider.stage}
+resources:
+    Resources:
+        BasePathMapping:
+            Type: "AWS::ApiGateway::BasePathMapping"
+            Properties:
+                BasePath: v1
+                DomainName: ${env:SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME}
+                RestApiId:
+                    Ref: ApiGatewayRestApi
+                Stage: ${self:provider.stage}
 
 functions:
     get-entity:
