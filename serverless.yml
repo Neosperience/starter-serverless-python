@@ -40,6 +40,7 @@ custom:
             - pyflakes
             - pylama
             - six
+    pythonBin: python3
 
 resources:
     Resources:
