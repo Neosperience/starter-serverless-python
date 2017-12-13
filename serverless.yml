@@ -32,15 +32,15 @@ custom:
         resultTtlInSeconds: 300
         identitySource: method.request.header.Authorization
     pythonRequirements:
-        #dockerizePip: true
-        noDeploy: # non funziona
-            - mccabe
-            - pycodestyle
-            - pydocstyle
-            - pyflakes
-            - pylama
-            - six
-    pythonBin: python3
+        pythonBin: python3
+        # dockerizePip: true
+        # noDeploy: # non funziona
+        #     - mccabe
+        #     - pycodestyle
+        #     - pydocstyle
+        #     - pyflakes
+        #     - pylama
+        #     - six
 
 resources:
     Resources:
