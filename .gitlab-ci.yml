@@ -12,17 +12,17 @@ test:
 
 deploy-experiments:
   stage: deploy
-  image: node:4.3
+  image: node:6.10
   environment:
     name: experiments
-    url: https://dario.experiments.neosperiencecloud.com/v1/entity
+    url: https://starter-python.experiments.neosperiencecloud.com/v1/entity
   variables:
     AWS_ACCESS_KEY_ID: $EXPERIMENTS_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $EXPERIMENTS_AWS_SECRET_ACCESS_KEY
     SERVERLESS_ACCOUNT_ID: $EXPERIMENTS_AWS_ACCOUNT_ID
     SERVERLESS_STAGE: dev
     SERVERLESS_REGION: eu-west-1
-    SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME: dario.experiments.neosperiencecloud.com
+    SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME: starter-python.experiments.neosperiencecloud.com
     CONFIG_LOGGER_CONSOLE_OPTIONS_LEVEL: verbose
     CONFIG_LOGGER_FILE_OPTIONS_LEVEL: verbose
     CONFIG_LOGGER_FILE_OPTIONS_FILENAME: logs/dev.log
