@@ -12,7 +12,7 @@ test:
 
 deploy-experiments:
   stage: deploy
-  image: node:6.10
+  image: aturner/node-python
   environment:
     name: experiments
     url: https://starter-python.experiments.neosperiencecloud.com/v1/entity
@@ -27,6 +27,8 @@ deploy-experiments:
     CONFIG_LOGGER_FILE_OPTIONS_LEVEL: verbose
     CONFIG_LOGGER_FILE_OPTIONS_FILENAME: logs/dev.log
   before_script:
+    - node -v
+    - python3 -V
     - npm prune
     - npm update -q
   script:
