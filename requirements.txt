@@ -1,6 +1,4 @@
 dependency-injector==3.8.2
 jsonschema==2.6.0
 python-dateutil==2.6.1
-six==1.11.0
-snowballstemmer==1.2.1
 strict-rfc3339==0.7

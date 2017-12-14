@@ -10,7 +10,9 @@ package:
         - .*
         - deploy.sh
         - package.json
+        - package-lock.json
         - requirements.txt
+        - dev_requirements.txt
         - tox.ini
     include:
         - config/config.json
@@ -31,16 +33,6 @@ custom:
         arn: arn:aws:lambda:${self:provider.region}:${self:custom.accountId}:function:nsp-identity-services-v1-${self:provider.stage}-custom-authorizer
         resultTtlInSeconds: 300
         identitySource: method.request.header.Authorization
-    # pythonRequirements:
-    #     pythonBin: /usr/bin/python3
-    #     dockerizePip: true
-    #     noDeploy: # non funziona
-    #         - mccabe
-    #         - pycodestyle
-    #         - pydocstyle
-    #         - pyflakes
-    #         - pylama
-    #         - six
 
 resources:
     Resources:
@@ -55,7 +47,7 @@ resources:
 
 functions:
     get-entity:
-        handler: src/entity/lambda/get_entity.handler
+        handler: src/entity/lambdas/get_entity.handler
         timeout: 30
         events:
             - http:

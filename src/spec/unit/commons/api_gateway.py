@@ -1,0 +1,411 @@
+import json
+import unittest
+from unittest.mock import MagicMock
+
+from src.commons.nsp_error import NspError
+from src.commons.http_error import HttpError
+import src.commons.jsonutils as jsonutils
+from src.commons.api_gateway import APIGateway
+
+
+class APIGatewayGetHttpMethod(unittest.TestCase):
+    def testMissing(self):
+        'APIGateway.getHttpMethod() should return `UNKNOWN_METHOD` if no method is found in the event'
+        event = {}
+        sut = APIGateway(event)
+        httpMethod = sut.getHttpMethod()
+        self.assertEqual(httpMethod, 'UNKNOWN_METHOD')
+
+    def testFound(self):
+        'APIGateway.getHttpMethod() should return the method found in the event'
+        event = {'httpMethod': 'method'}
+        sut = APIGateway(event)
+        httpMethod = sut.getHttpMethod()
+        self.assertEqual(httpMethod, 'method')
+
+
+class APIGatewayGetHttpResource(unittest.TestCase):
+    def testStandardHttps(self):
+        'APIGateway.getHttpResource() should return a standard port https resource'
+        event = {
+            'headers': {
+                'X-Forwarded-Port': '443',
+                'X-Forwarded-Proto': 'https',
+                'Host': 'localhost'
+            },
+            'path': '/path'
+        }
+        sut = APIGateway(event)
+        httpResource = sut.getHttpResource()
+        self.assertEqual(httpResource, 'https://localhost/path')
+
+    def testNonStandardHttps(self):
+        'APIGateway.getHttpResource() should return a standard port https resource'
+        event = {
+            'headers': {
+                'X-Forwarded-Port': '8443',
+                'X-Forwarded-Proto': 'https',
+                'Host': 'localhost'
+            },
+            'path': '/path'
+        }
+        sut = APIGateway(event)
+        httpResource = sut.getHttpResource()
+        self.assertEqual(httpResource, 'https://localhost:8443/path')
+
+    def testStandardHttp(self):
+        'APIGateway.getHttpResource() should return a standard port http resource'
+        event = {
+            'headers': {
+                'X-Forwarded-Port': '80',
+                'X-Forwarded-Proto': 'http',
+                'Host': 'localhost'
+            },
+            'path': '/path'
+        }
+        sut = APIGateway(event)
+        httpResource = sut.getHttpResource()
+        self.assertEqual(httpResource, 'http://localhost/path')
+
+    def testNonStandardHttp(self):
+        'APIGateway.getHttpResource() should return a standard port http resource'
+        event = {
+            'headers': {
+                'X-Forwarded-Port': '8080',
+                'X-Forwarded-Proto': 'http',
+                'Host': 'localhost'
+            },
+            'path': '/path'
+        }
+        sut = APIGateway(event)
+        httpResource = sut.getHttpResource()
+        self.assertEqual(httpResource, 'http://localhost:8080/path')
+
+    def testContextPath(self):
+        'APIGateway.getHttpResource() should insert a context path if the host is an API Gateway API'
+        event = {
+            'headers': {
+                'X-Forwarded-Port': '443',
+                'X-Forwarded-Proto': 'https',
+                'Host': '12345678.execute-api.eu-west-1.amazonaws.com'
+            },
+            'path': '/path',
+            'requestContext': {
+                'stage': 'stage'
+            }
+        }
+        sut = APIGateway(event)
+        httpResource = sut.getHttpResource()
+        self.assertEqual(httpResource, 'https://12345678.execute-api.eu-west-1.amazonaws.com/stage/path')
+
+    def testMissingElemenst(self):
+        'APIGateway.getHttpResource() should return a default value for needed elements are missing'
+        event = {}
+        sut = APIGateway(event)
+        httpResource = sut.getHttpResource()
+        self.assertEqual(httpResource, 'UNKNOWN_PROTOCOL://UNKNOWN_HOST:UNKNOWN_PORT/UNKNOWN_PATH')
+
+
+class APIGatewayGetAndValidatePrincipal(unittest.TestCase):
+    def testMissing(self):
+        'APIGateway.getAndValidatePrincipal() should raise a 401 HttpError if principalId is missing'
+        event = {}
+        sut = APIGateway(event)
+        try:
+            sut.getAndValidatePrincipal()
+            self.fail()
+        except Exception as e:
+            self.assertIsInstance(e, HttpError)
+            self.assertEqual(e.statusCode, 401)
+            self.assertEqual(e.message, 'Missing principal')
+
+    def testMalformedJSON(self):
+        'APIGateway.getAndValidatePrincipal() should raise a 401 HttpError if principalId is not a JSON string'
+        event = {
+            'requestContext': {
+                'authorizer': {
+                    'principalId': 'hello'
+                }
+            }
+        }
+        sut = APIGateway(event)
+        try:
+            sut.getAndValidatePrincipal()
+            self.fail()
+        except Exception as e:
+            self.assertIsInstance(e, HttpError)
+            self.assertEqual(e.statusCode, 401)
+            self.assertEqual(e.message, 'Malformed principal JSON')
+            self.assertIsInstance(e.causes, list)
+            self.assertGreater(len(e.causes), 0)
+            for i in range(len(e.causes)):
+                with self.subTest(i=i):
+                    self.assertIsInstance(e.causes[i], str)
+
+    def testInvalidJSON(self):
+        'APIGateway.getAndValidatePrincipal() should raise a 401 HttpError if principalId is not a valid JSON'
+        event = {
+            'requestContext': {
+                'authorizer': {
+                    'principalId': '{}'
+                }
+            }
+        }
+        sut = APIGateway(event)
+        try:
+            sut.getAndValidatePrincipal()
+            self.fail()
+        except Exception as e:
+            self.assertIsInstance(e, HttpError)
+            self.assertEqual(e.statusCode, 401)
+            self.assertEqual(e.message, 'Invalid principal')
+            self.assertIsInstance(e.causes, list)
+            self.assertGreater(len(e.causes), 0)
+            for i in range(len(e.causes)):
+                with self.subTest(i=i):
+                    self.assertIsInstance(e.causes[i], str)
+
+
+class APIGatewayGetPathParameter(unittest.TestCase):
+    def testMissingRequired(self):
+        'APIGateway.getPathParameter() should raise a 400 HttpError if the parameter is missing and required'
+        event = {}
+        sut = APIGateway(event)
+        with self.assertRaises(HttpError) as cm:
+            sut.getPathParameter('p', True)
+        self.assertEqual(cm.exception.statusCode, 400)
+        self.assertEqual(cm.exception.statusReason, 'Bad request')
+        self.assertEqual(cm.exception.message, 'Missing path parameter "p"')
+
+    def testMissingNotRequired(self):
+        'APIGateway.getPathParameter() should return None if the parameter is missing and not required'
+        event = {}
+        sut = APIGateway(event)
+        param = sut.getPathParameter('p', False)
+        self.assertIsNone(param)
+
+    def testValidateMissing(self):
+        'APIGateway.getPathParameter() should call the validator if passed [with missing param]'
+        event = {}
+        sut = APIGateway(event)
+        validator = MagicMock()
+        sut.getPathParameter('p', False, validator)
+        validator.assert_called_once_with(None)
+
+    def testValidateFound(self):
+        'APIGateway.getPathParameter() should call the validator if passed [with found param]'
+        event = {
+            'pathParameters': {
+                'p': 'param'
+            }
+        }
+        sut = APIGateway(event)
+        validator = MagicMock()
+        sut.getPathParameter('p', False, validator)
+        validator.assert_called_once_with('param')
+
+    def testReturn(self):
+        'APIGateway.getPathParameter() should return the parameter'
+        event = {
+            'pathParameters': {
+                'p': 'param'
+            }
+        }
+        sut = APIGateway(event)
+        param = sut.getPathParameter('p', False)
+        self.assertEqual(param, 'param')
+
+
+class APIGatewayGetQueryStringParameter(unittest.TestCase):
+    def testMissingRequired(self):
+        'APIGateway.getQueryStringParameter() should raise a 400 HttpError if the parameter is missing and required'
+        event = {}
+        sut = APIGateway(event)
+        with self.assertRaises(HttpError) as cm:
+            sut.getQueryStringParameter('p', True)
+        self.assertEqual(cm.exception.statusCode, 400)
+        self.assertEqual(cm.exception.statusReason, 'Bad request')
+        self.assertEqual(cm.exception.message, 'Missing query string parameter "p"')
+
+    def testMissingNotRequired(self):
+        'APIGateway.getQueryStringParameter() should return None if the parameter is missing and not required'
+        event = {}
+        sut = APIGateway(event)
+        param = sut.getQueryStringParameter('p', False)
+        self.assertIsNone(param)
+
+    def testValidateMissing(self):
+        'APIGateway.getQueryStringParameter() should call the validator if passed [with missing param]'
+        event = {}
+        sut = APIGateway(event)
+        validator = MagicMock()
+        sut.getQueryStringParameter('p', False, validator)
+        validator.assert_called_once_with(None)
+
+    def testValidateFound(self):
+        'APIGateway.getQueryStringParameter() should call the validator if passed [with found param]'
+        event = {
+            'queryStringParameters': {
+                'p': 'param'
+            }
+        }
+        sut = APIGateway(event)
+        validator = MagicMock()
+        sut.getQueryStringParameter('p', False, validator)
+        validator.assert_called_once_with('param')
+
+    def testReturn(self):
+        'APIGateway.getQueryStringParameter() should return the parameter'
+        event = {
+            'queryStringParameters': {
+                'p': 'param'
+            }
+        }
+        sut = APIGateway(event)
+        param = sut.getQueryStringParameter('p', False)
+        self.assertEqual(param, 'param')
+
+
+class APIGatewayGetHeader(unittest.TestCase):
+    def testMissingRequired(self):
+        'APIGateway.getHeader() should raise a 400 HttpError if the header is missing and required'
+        event = {}
+        sut = APIGateway(event)
+        with self.assertRaises(HttpError) as cm:
+            sut.getHeader('h', True)
+        self.assertEqual(cm.exception.statusCode, 400)
+        self.assertEqual(cm.exception.statusReason, 'Bad request')
+        self.assertEqual(cm.exception.message, 'Missing header "h"')
+
+    def testMissingNotRequired(self):
+        'APIGateway.getHeader() should return None if the header is missing and not required'
+        event = {}
+        sut = APIGateway(event)
+        param = sut.getHeader('h', False)
+        self.assertIsNone(param)
+
+    def testValidateMissing(self):
+        'APIGateway.getHeader() should call the validator if passed [with missing header]'
+        event = {}
+        sut = APIGateway(event)
+        validator = MagicMock()
+        sut.getHeader('h', False, validator)
+        validator.assert_called_once_with(None)
+
+    def testValidateFound(self):
+        'APIGateway.getHeader() should call the validator if passed [with found header]'
+        event = {
+            'headers': {
+                'h': 'param'
+            }
+        }
+        sut = APIGateway(event)
+        validator = MagicMock()
+        sut.getHeader('h', False, validator)
+        validator.assert_called_once_with('param')
+
+    def testReturn(self):
+        'APIGateway.getHeader() should return the header'
+        event = {
+            'headers': {
+                'h': 'header'
+            }
+        }
+        sut = APIGateway(event)
+        header = sut.getHeader('h', False)
+        self.assertEqual(header, 'header')
+
+
+class APIGatewayCreateLocationHeader(unittest.TestCase):
+    def test(self):
+        'APIGateway.createLocationHeader() should return getHttpResource() with the parameter appended'
+        event = {}
+        sut = APIGateway(event)
+        sut.getHttpResource = MagicMock(return_value='http-resource')
+        uuid = 'uuid'
+        location = sut.createLocationHeader(uuid)
+        self.assertEqual(location, 'http-resource/uuid')
+
+
+class APIGatewayCreateResponse(unittest.TestCase):
+    def testWithoutParameters(self):
+        '''
+        APIGateway.createResponse() should create a response with statusCode 200, the Access-Control-Allow-Origin
+        header and a body with an empty JSON if called without parameters
+        '''
+        event = {}
+        sut = APIGateway(event)
+        response = sut.createResponse()
+        self.assertEqual(response, {'statusCode': 200, 'headers': {'Access-Control-Allow-Origin': '*'}, 'body': '{}'})
+
+    def testWithAllParameters(self):
+        '''
+        APIGateway.createResponse() should create a response with the passed statusCode, the
+        Access-Control-Allow-Origin header added to the passed headers and the conversiont to json
+        of the passed body as body
+        '''
+        event = {}
+        sut = APIGateway(event)
+        body = {'this': {'is': {'the': 'body'}}}
+        response = sut.createResponse(123, {'h': 'header'}, body)
+        self.assertEqual(response, {
+            'statusCode': 123,
+            'headers': {'Access-Control-Allow-Origin': '*', 'h': 'header'},
+            'body': json.dumps(body, default=jsonutils.dumpdefault)
+        })
+
+
+class APIGatewayCreateErrorResponse(unittest.TestCase):
+
+    def testWithHttpError(self):
+        '''
+        APIGateway.createErrorResponse() should create a response with the statusCode of the passed HttpError, the
+        Access-Control-Allow-Origin header and the conversion to json of the __dict__ of the passed HttpError as body
+        '''
+        event = {}
+        sut = APIGateway(event)
+        error = HttpError(HttpError.NOT_FOUND, 'message')
+        response = sut.createErrorResponse(error)
+        self.assertEqual(response, {
+            'statusCode': error.statusCode,
+            'headers': {'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps(error.__dict__, default=jsonutils.dumpdefault)
+        })
+
+    def testWithNspError(self):
+        '''
+        APIGateway.createErrorResponse() should wrap the passed NspError in an HttpError and then create an error
+        response with it
+        '''
+        event = {}
+        sut = APIGateway(event)
+        error = NspError(NspError.ENTITY_NOT_FOUND, 'message')
+        httpError = HttpError.wrap(error)
+        httpError.method = sut.getHttpMethod()
+        httpError.resource = sut.getHttpResource()
+        response = sut.createErrorResponse(error)
+        self.assertEqual(response, {
+            'statusCode': httpError.statusCode,
+            'headers': {'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps(httpError.__dict__, default=jsonutils.dumpdefault)
+        })
+
+    def testWithException(self):
+        '''
+        APIGateway.createErrorResponse() should wrap the passed Exception in an HttpError and the create an error
+        response with it
+        '''
+        event = {}
+        sut = APIGateway(event)
+        error = KeyError('unknown')
+        httpError = HttpError.wrap(error)
+        httpError.method = sut.getHttpMethod()
+        httpError.resource = sut.getHttpResource()
+        response = sut.createErrorResponse(error)
+        self.assertEqual(response, {
+            'statusCode': httpError.statusCode,
+            'headers': {'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps(httpError.__dict__, default=jsonutils.dumpdefault)
+        })
+
+# TODO getAndValidateEntity

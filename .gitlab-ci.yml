@@ -3,7 +3,7 @@ test:
   script:
     - pip3 install -r dev_requirements.txt
     - pycodestyle src
-    - python3 -m unittest src/spec/*/*.py -v
+    - python3 -m unittest src/spec/*/*/*.py -v
 
 deploy-experiments:
   stage: deploy

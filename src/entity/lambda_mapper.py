@@ -1,12 +1,8 @@
-from src.commons.api_gateway import APIGateway
-import traceback
-
-
-def LambdaMapper(authorizer):
+def LambdaMapper(authorizer, apiGatewayFactory):
 
     class Service:
         def getEntity(self, event):
-            apiGateway = APIGateway(event)  # temp, si deve iniettare la factory
+            apiGateway = apiGatewayFactory(event)
             try:
                 principal = apiGateway.getAndValidatePrincipal()
                 uuid = apiGateway.getPathParameter('uuid', required=True)

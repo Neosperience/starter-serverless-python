@@ -40,12 +40,12 @@ def createResponse(statusCode, headers, body):
     return response
 
 
-def parseJSON(str, name, errorFactory):
+def parseJSON(string, name, errorFactory):
     try:
-        return json.loads(str)
+        return json.loads(string)
     except Exception as parsingError:
         error = errorFactory()
-        error.causes = [parsingError.message]
+        error.causes = [str(parsingError)]
         raise error
 
 
@@ -59,10 +59,10 @@ def validateJSON(instance, schema, errorFactory):
         raise error
 
 
-def getAndValidateJSON(str, name, schema, missingErrorFactory, malformedErrorFactory, invalidErrorFactory):
-    if str is None:
+def getAndValidateJSON(string, name, schema, missingErrorFactory, malformedErrorFactory, invalidErrorFactory):
+    if string is None:
         raise missingErrorFactory()
-    obj = parseJSON(str, name, malformedErrorFactory)
+    obj = parseJSON(string, name, malformedErrorFactory)
     validateJSON(obj, schema, invalidErrorFactory)
     jsonutils.convertDatetimeValues(obj)
     return obj
@@ -71,7 +71,7 @@ def getAndValidateJSON(str, name, schema, missingErrorFactory, malformedErrorFac
 class APIGateway:
 
     def __init__(self, event):
-        print('APIGateway.__init__: event = {0}'.format(event))
+        # print('APIGateway.__init__: event = {0}'.format(event))
         self.event = event
 
     def eventGet(self, path, default=None):
@@ -92,7 +92,7 @@ class APIGateway:
         # add stage as context path when calling API directly:
         if API_GATEWAY_URL_MATCHER.search(host):
             contextPath = '/' + self.eventGet('requestContext.stage', 'UNKNOWN_STAGE')
-        path = self.eventGet('path', 'UNKNOWN_PATH')
+        path = self.eventGet('path', '/UNKNOWN_PATH')
         return '{protocol}://{host}{port}{contextPath}{path}'.format(
             protocol=protocol, host=host, port=port, contextPath=contextPath, path=path
         )
