@@ -33,14 +33,14 @@ def Repository():
 
     class Service:
         def createThing(self, thing):
-            data[thing.uuid] = thing
+            data[thing['uuid']] = thing
             return thing
 
         def getThing(self, uuid):
             return data.get(uuid)
 
         def updateThing(self, uuid, thing):
-            data[thing.uuid] = thing
+            data[thing['uuid']] = thing
             return thing
 
         def deleteThing(self, uuid):
