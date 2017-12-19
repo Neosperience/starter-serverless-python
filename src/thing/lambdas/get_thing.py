@@ -3,6 +3,6 @@ from src.container import Container
 
 def handler(event, context=None, container=Container()):
     try:
-        return container.entityLambdaMapper().getEntity(event)
+        return container.thingLambdaMapper().getThing(event)
     finally:
         container.shutdown()

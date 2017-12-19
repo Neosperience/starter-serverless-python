@@ -10,7 +10,7 @@ deploy-experiments:
   image: nikolaik/python-nodejs
   environment:
     name: experiments
-    url: https://starter-python.experiments.neosperiencecloud.com/v1/entity
+    url: https://starter-python.experiments.neosperiencecloud.com/v1/thing
   variables:
     AWS_ACCESS_KEY_ID: $EXPERIMENTS_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $EXPERIMENTS_AWS_SECRET_ACCESS_KEY

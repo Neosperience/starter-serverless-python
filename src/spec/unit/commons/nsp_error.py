@@ -7,8 +7,9 @@ from src.commons.nsp_error import NspError
 class NspErrorSpec(unittest.TestCase):
     def test_codes(self):
         'All the expected codes should be defined'
-        self.assertEqual(NspError.ENTITY_NOT_FOUND, 'ENTITY_NOT_FOUND')
         self.assertEqual(NspError.FORBIDDEN, 'FORBIDDEN')
+        self.assertEqual(NspError.THING_NOT_FOUND, 'THING_NOT_FOUND')
+        self.assertEqual(NspError.THING_UNPROCESSABLE, 'THING_UNPROCESSABLE')
 
     def test_initWithoutCauses(self):
         'The instance should have the expected attributes [without causes]'

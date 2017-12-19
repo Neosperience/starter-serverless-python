@@ -1,16 +1,16 @@
 import json
 import unittest
 
-from src.entity.lambdas.get_entity import handler
+from src.thing.lambdas.get_thing import handler
 
 ISO_DATETIME_Z_REGEX = '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$'
 
 
-class GetEntityLambdaSpec(unittest.TestCase):
+class GetThingLambdaSpec(unittest.TestCase):
     def setUp(self):
         self.principal = {
             'organizationId': 'ORG001',
-            'roles': ['ROLE_ENTITY_USER']
+            'roles': ['ROLE_THING_USER']
         }
 
     def test_401(self):
@@ -18,7 +18,7 @@ class GetEntityLambdaSpec(unittest.TestCase):
         uuid = 'dario'
         event = {
             'httpMethod': 'GET',
-            'path': '/entity/{0}'.format(uuid),
+            'path': '/thing/{0}'.format(uuid),
             'headers': {
                 'Host': 'localhost',
                 'X-Forwarded-Proto': 'http',
@@ -42,7 +42,7 @@ class GetEntityLambdaSpec(unittest.TestCase):
         self.assertEqual(body['message'], 'Missing principal')
         self.assertEqual(body['causes'], [])
         self.assertEqual(body['method'], 'GET')
-        self.assertEqual(body['resource'], 'http://localhost/entity/dario')
+        self.assertEqual(body['resource'], 'http://localhost/thing/dario')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
     def test_400(self):
@@ -50,7 +50,7 @@ class GetEntityLambdaSpec(unittest.TestCase):
         uuid = 'dario'
         event = {
             'httpMethod': 'GET',
-            'path': '/entity/{0}'.format(uuid),
+            'path': '/thing/{0}'.format(uuid),
             'headers': {
                 'Host': 'localhost',
                 'X-Forwarded-Proto': 'http',
@@ -72,7 +72,7 @@ class GetEntityLambdaSpec(unittest.TestCase):
         self.assertEqual(body['message'], 'Missing path parameter "uuid"')
         self.assertEqual(body['causes'], [])
         self.assertEqual(body['method'], 'GET')
-        self.assertEqual(body['resource'], 'http://localhost/entity/dario')
+        self.assertEqual(body['resource'], 'http://localhost/thing/dario')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
     def test_403(self):
@@ -81,7 +81,7 @@ class GetEntityLambdaSpec(unittest.TestCase):
         uuid = 'dario'
         event = {
             'httpMethod': 'GET',
-            'path': '/entity/{0}'.format(uuid),
+            'path': '/thing/{0}'.format(uuid),
             'headers': {
                 'Host': 'localhost',
                 'X-Forwarded-Proto': 'http',
@@ -102,18 +102,18 @@ class GetEntityLambdaSpec(unittest.TestCase):
         body = json.loads(response['body'])
         self.assertEqual(body['statusCode'], 403)
         self.assertEqual(body['statusReason'], 'Forbidden')
-        self.assertEqual(body['message'], 'Principal is not authorized to get entities')
+        self.assertEqual(body['message'], 'Principal is not authorized to get things')
         self.assertEqual(body['causes'], [])
         self.assertEqual(body['method'], 'GET')
-        self.assertEqual(body['resource'], 'http://localhost/entity/dario')
+        self.assertEqual(body['resource'], 'http://localhost/thing/dario')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
     def test_404NotExists(self):
-        'Should return a 404 response if the entity does not exist'
+        'Should return a 404 response if the thing does not exist'
         uuid = 'unknown'
         event = {
             'httpMethod': 'GET',
-            'path': '/entity/{0}'.format(uuid),
+            'path': '/thing/{0}'.format(uuid),
             'headers': {
                 'Host': 'localhost',
                 'X-Forwarded-Proto': 'http',
@@ -134,19 +134,19 @@ class GetEntityLambdaSpec(unittest.TestCase):
         body = json.loads(response['body'])
         self.assertEqual(body['statusCode'], 404)
         self.assertEqual(body['statusReason'], 'Not found')
-        self.assertEqual(body['message'], 'Entity "unknown" not found')
+        self.assertEqual(body['message'], 'Thing "unknown" not found')
         self.assertEqual(body['causes'], [])
         self.assertEqual(body['method'], 'GET')
-        self.assertEqual(body['resource'], 'http://localhost/entity/unknown')
+        self.assertEqual(body['resource'], 'http://localhost/thing/unknown')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
     def test_404NotOwned(self):
-        'Should return a 404 response if the entity is not owned'
+        'Should return a 404 response if the thing is not owned'
         self.principal['organizationId'] = 'ANOTHER'
         uuid = 'dario'
         event = {
             'httpMethod': 'GET',
-            'path': '/entity/{0}'.format(uuid),
+            'path': '/thing/{0}'.format(uuid),
             'headers': {
                 'Host': 'localhost',
                 'X-Forwarded-Proto': 'http',
@@ -167,18 +167,18 @@ class GetEntityLambdaSpec(unittest.TestCase):
         body = json.loads(response['body'])
         self.assertEqual(body['statusCode'], 404)
         self.assertEqual(body['statusReason'], 'Not found')
-        self.assertEqual(body['message'], 'Entity "dario" not found')
+        self.assertEqual(body['message'], 'Thing "dario" not found')
         self.assertEqual(body['causes'], [])
         self.assertEqual(body['method'], 'GET')
-        self.assertEqual(body['resource'], 'http://localhost/entity/dario')
+        self.assertEqual(body['resource'], 'http://localhost/thing/dario')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
     def test_200(self):
-        'Should return a 200 response with the requested entity'
+        'Should return a 200 response with the requested thing'
         uuid = 'dario'
         event = {
             'httpMethod': 'GET',
-            'path': '/entity/{0}'.format(uuid),
+            'path': '/thing/{0}'.format(uuid),
             'headers': {
                 'Host': 'localhost',
                 'X-Forwarded-Proto': 'http',

@@ -112,13 +112,10 @@ class APIGatewayGetAndValidatePrincipal(unittest.TestCase):
         'APIGateway.getAndValidatePrincipal() should raise a 401 HttpError if principalId is missing'
         event = {}
         sut = APIGateway(event)
-        try:
+        with self.assertRaises(HttpError) as cm:
             sut.getAndValidatePrincipal()
-            self.fail()
-        except Exception as e:
-            self.assertIsInstance(e, HttpError)
-            self.assertEqual(e.statusCode, 401)
-            self.assertEqual(e.message, 'Missing principal')
+        self.assertEqual(cm.exception.statusCode, 401)
+        self.assertEqual(cm.exception.message, 'Missing principal')
 
     def testMalformedJSON(self):
         'APIGateway.getAndValidatePrincipal() should raise a 401 HttpError if principalId is not a JSON string'
@@ -130,18 +127,15 @@ class APIGatewayGetAndValidatePrincipal(unittest.TestCase):
             }
         }
         sut = APIGateway(event)
-        try:
+        with self.assertRaises(HttpError) as cm:
             sut.getAndValidatePrincipal()
-            self.fail()
-        except Exception as e:
-            self.assertIsInstance(e, HttpError)
-            self.assertEqual(e.statusCode, 401)
-            self.assertEqual(e.message, 'Malformed principal JSON')
-            self.assertIsInstance(e.causes, list)
-            self.assertGreater(len(e.causes), 0)
-            for i in range(len(e.causes)):
-                with self.subTest(i=i):
-                    self.assertIsInstance(e.causes[i], str)
+        self.assertEqual(cm.exception.statusCode, 401)
+        self.assertEqual(cm.exception.message, 'Malformed principal JSON')
+        self.assertIsInstance(cm.exception.causes, list)
+        self.assertGreater(len(cm.exception.causes), 0)
+        for i in range(len(cm.exception.causes)):
+            with self.subTest(i=i):
+                self.assertIsInstance(cm.exception.causes[i], str)
 
     def testInvalidJSON(self):
         'APIGateway.getAndValidatePrincipal() should raise a 401 HttpError if principalId is not a valid JSON'
@@ -153,23 +147,19 @@ class APIGatewayGetAndValidatePrincipal(unittest.TestCase):
             }
         }
         sut = APIGateway(event)
-        try:
+        with self.assertRaises(HttpError) as cm:
             sut.getAndValidatePrincipal()
-            self.fail()
-        except Exception as e:
-            self.assertIsInstance(e, HttpError)
-            self.assertEqual(e.statusCode, 401)
-            self.assertEqual(e.message, 'Invalid principal')
-            self.assertIsInstance(e.causes, list)
-            self.assertGreater(len(e.causes), 0)
-            for i in range(len(e.causes)):
-                with self.subTest(i=i):
-                    self.assertIsInstance(e.causes[i], str)
+        self.assertEqual(cm.exception.statusCode, 401)
+        self.assertEqual(cm.exception.message, 'Invalid principal')
+        self.assertIsInstance(cm.exception.causes, list)
+        self.assertGreater(len(cm.exception.causes), 0)
+        for i in range(len(cm.exception.causes)):
+            with self.subTest(i=i):
+                self.assertIsInstance(cm.exception.causes[i], str)
 
     def testOK(self):
         'APIGateway.getAndValidatePrincipal() should return the principal as a Principal instance'
         p = {'organizationId': 'id', 'roles': []}
-        # expected = Principal(p)
         event = {
             'requestContext': {
                 'authorizer': {
@@ -179,8 +169,7 @@ class APIGatewayGetAndValidatePrincipal(unittest.TestCase):
         }
         sut = APIGateway(event)
         principal = sut.getAndValidatePrincipal()
-        # TODO capire perché questo fallisce:
-        # self.assertEqual(principal, expected)
+        # Non si possono confrontare i Principal se non si scrive il loro operatore, e per i test non ne vale la pena
         self.assertIsInstance(principal, Principal)
         self.assertEqual(principal.organizationId, p['organizationId'])
         self.assertEqual(principal.roles, set(p['roles']))
@@ -392,7 +381,7 @@ class APIGatewayCreateErrorResponse(unittest.TestCase):
         response with it'''
         event = {}
         sut = APIGateway(event)
-        error = NspError(NspError.ENTITY_NOT_FOUND, 'message')
+        error = NspError(NspError.THING_NOT_FOUND, 'message')
         httpError = HttpError.wrap(error)
         httpError.method = sut.getHttpMethod()
         httpError.resource = sut.getHttpResource()
@@ -431,13 +420,10 @@ class APIGatewayGetAndValidateEntity(unittest.TestCase):
         sut = APIGateway(event)
         schema = {}
         name = 'entity'
-        try:
+        with self.assertRaises(HttpError) as cm:
             sut.getAndValidateEntity(schema, name)
-            self.fail()
-        except Exception as e:
-            self.assertIsInstance(e, HttpError)
-            self.assertEqual(e.statusCode, 415)
-            self.assertEqual(e.message, 'Expected application/json Content-Type')
+        self.assertEqual(cm.exception.statusCode, 415)
+        self.assertEqual(cm.exception.message, 'Expected application/json Content-Type')
 
     def testMissing(self):
         'APIGateway.getAndValidateEntity() should raise a 400 HttpError if body is missing'
@@ -445,13 +431,10 @@ class APIGatewayGetAndValidateEntity(unittest.TestCase):
         sut = APIGateway(event)
         schema = {}
         name = 'entity'
-        try:
+        with self.assertRaises(HttpError) as cm:
             sut.getAndValidateEntity(schema, name)
-            self.fail()
-        except Exception as e:
-            self.assertIsInstance(e, HttpError)
-            self.assertEqual(e.statusCode, 400)
-            self.assertEqual(e.message, 'Missing entity')
+        self.assertEqual(cm.exception.statusCode, 400)
+        self.assertEqual(cm.exception.message, 'Missing entity')
 
     def testMalformedJSON(self):
         'APIGateway.getAndValidateEntity() should raise a 400 HttpError if body is not a JSON string'
@@ -461,18 +444,15 @@ class APIGatewayGetAndValidateEntity(unittest.TestCase):
         sut = APIGateway(event)
         schema = {}
         name = 'entity'
-        try:
+        with self.assertRaises(HttpError) as cm:
             sut.getAndValidateEntity(schema, name)
-            self.fail()
-        except Exception as e:
-            self.assertIsInstance(e, HttpError)
-            self.assertEqual(e.statusCode, 400)
-            self.assertEqual(e.message, 'Malformed entity JSON')
-            self.assertIsInstance(e.causes, list)
-            self.assertGreater(len(e.causes), 0)
-            for i in range(len(e.causes)):
-                with self.subTest(i=i):
-                    self.assertIsInstance(e.causes[i], str)
+        self.assertEqual(cm.exception.statusCode, 400)
+        self.assertEqual(cm.exception.message, 'Malformed entity JSON')
+        self.assertIsInstance(cm.exception.causes, list)
+        self.assertGreater(len(cm.exception.causes), 0)
+        for i in range(len(cm.exception.causes)):
+            with self.subTest(i=i):
+                self.assertIsInstance(cm.exception.causes[i], str)
 
     def testInvalidJSON(self):
         'APIGateway.getAndValidateEntity() should raise a 422 HttpError if body is not a valid JSON'
@@ -482,18 +462,15 @@ class APIGatewayGetAndValidateEntity(unittest.TestCase):
         sut = APIGateway(event)
         schema = {'type': 'object'}
         name = 'entity'
-        try:
+        with self.assertRaises(HttpError) as cm:
             sut.getAndValidateEntity(schema, name)
-            self.fail()
-        except Exception as e:
-            self.assertIsInstance(e, HttpError)
-            self.assertEqual(e.statusCode, 422)
-            self.assertEqual(e.message, 'Invalid entity')
-            self.assertIsInstance(e.causes, list)
-            self.assertGreater(len(e.causes), 0)
-            for i in range(len(e.causes)):
-                with self.subTest(i=i):
-                    self.assertIsInstance(e.causes[i], str)
+        self.assertEqual(cm.exception.statusCode, 422)
+        self.assertEqual(cm.exception.message, 'Invalid entity')
+        self.assertIsInstance(cm.exception.causes, list)
+        self.assertGreater(len(cm.exception.causes), 0)
+        for i in range(len(cm.exception.causes)):
+            with self.subTest(i=i):
+                self.assertIsInstance(cm.exception.causes[i], str)
 
     def testOK(self):
         'APIGateway.getAndValidateEntity() should return the parsed entity as a dictionary with the datetimes converted'

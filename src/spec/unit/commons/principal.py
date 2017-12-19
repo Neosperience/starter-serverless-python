@@ -33,13 +33,10 @@ class PrincipalCheckAuthorization(unittest.TestCase):
     def testRaises(self):
         'Principal.checkAuthorization() should raise'
         principal = Principal({'roles': {'a'}})
-        try:
+        with self.assertRaises(NspError) as cm:
             principal.checkAuthorization(['b'], 'operation')
-            self.fail()
-        except Exception as error:
-            self.assertIsInstance(error, NspError)
-            self.assertEqual(error.code, NspError.FORBIDDEN)
-            self.assertEqual(error.message, 'Principal is not authorized to operation')
+        self.assertEqual(cm.exception.code, NspError.FORBIDDEN)
+        self.assertEqual(cm.exception.message, 'Principal is not authorized to operation')
 
 
 class PrincipalCheckVisibility(unittest.TestCase):
@@ -59,10 +56,43 @@ class PrincipalCheckVisibility(unittest.TestCase):
         'Principal.checkVisibility() should raise if principal is not owner'
         entity = {'uuid': 'uuid', 'owner': '001'}
         principal = Principal({'organizationId': '002', 'roles': {'ROLE_ENTITY_USER'}})
-        try:
+        with self.assertRaises(NspError) as cm:
             principal.checkVisibility(entity, 'entity', 'code')
-            self.fail()
-        except Exception as error:
-            self.assertIsInstance(error, NspError)
-            self.assertEqual(error.code, 'code')
-            self.assertEqual(error.message, 'Entity "uuid" not found')
+        self.assertEqual(cm.exception.code, 'code')
+        self.assertEqual(cm.exception.message, 'Entity "uuid" not found')
+
+
+class PrincipalCheckReadOnlyProperties(unittest.TestCase):
+    def testRaisesForAdmin(self):
+        'Principal.checkReadOnlyProperties() should raise if principal is admin'
+        oldEntity = {'uuid': 'uuid1', 'owner': 'owner1', 'name': 'name1', 'created': 'created1'}
+        newEntity = {'uuid': 'uuid2', 'owner': 'owner2', 'name': 'name2', 'created': 'created1'}
+        principal = Principal({'roles': {'ROLE_ADMIN'}})
+        with self.assertRaises(NspError) as cm:
+            principal.checkReadOnlyProperties(oldEntity, newEntity, ['uuid', 'created'], 'code')
+        self.assertEqual(cm.exception.code, 'code')
+        self.assertEqual(cm.exception.message, 'Cannot change read-only properties')
+        self.assertEqual(cm.exception.causes, [
+            'Cannot change read-only property: uuid'
+        ])
+
+    def testRaisesForNonAdmin(self):
+        'Principal.checkReadOnlyProperties() should raise if principal is not admin'
+        oldEntity = {'uuid': 'uuid1', 'owner': 'owner1', 'name': 'name1', 'created': 'created1'}
+        newEntity = {'uuid': 'uuid2', 'owner': 'owner2', 'name': 'name2', 'created': 'created1'}
+        principal = Principal({'roles': {'ROLE_THING_USER'}})
+        with self.assertRaises(NspError) as cm:
+            principal.checkReadOnlyProperties(oldEntity, newEntity, ['uuid', 'created'], 'code')
+        self.assertEqual(cm.exception.code, 'code')
+        self.assertEqual(cm.exception.message, 'Cannot change read-only properties')
+        self.assertEqual(cm.exception.causes, [
+            'Cannot change read-only property: uuid',
+            'Cannot change read-only property: owner'
+        ])
+
+    def testReturns(self):
+        'Principal.checkReadOnlyProperties() should return'
+        oldEntity = {'uuid': 'uuid1', 'owner': 'owner1', 'name': 'name1', 'created': 'created1'}
+        newEntity = {'uuid': 'uuid1', 'owner': 'owner1', 'name': 'name2', 'created': 'created1'}
+        principal = Principal({'roles': {'ROLE_THING_USER'}})
+        principal.checkReadOnlyProperties(oldEntity, newEntity, ['uuid', 'created'], 'code')

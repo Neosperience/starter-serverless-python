@@ -5,6 +5,7 @@ from src.commons.nsp_error import NspError
 
 class HttpError(Exception):
     BAD_REQUEST = 400
+    CONFLICT = 409
     FORBIDDEN = 403
     INTERNAL_SERVER_ERROR = 500
     NOT_FOUND = 404
@@ -14,6 +15,7 @@ class HttpError(Exception):
 
     STATUS_REASONS = {
         BAD_REQUEST: 'Bad request',
+        CONFLICT: 'Conflict',
         FORBIDDEN: 'Forbidden',
         INTERNAL_SERVER_ERROR: 'Internal server error',
         NOT_FOUND: 'Not found',
@@ -23,7 +25,9 @@ class HttpError(Exception):
     }
 
     ERROR_CODES_TO_STATUS_CODES = {}
-    ERROR_CODES_TO_STATUS_CODES[NspError.ENTITY_NOT_FOUND] = NOT_FOUND
+    ERROR_CODES_TO_STATUS_CODES[NspError.THING_ALREADY_EXISTS] = CONFLICT
+    ERROR_CODES_TO_STATUS_CODES[NspError.THING_NOT_FOUND] = NOT_FOUND
+    ERROR_CODES_TO_STATUS_CODES[NspError.THING_UNPROCESSABLE] = UNPROCESSABLE_ENTITY
     ERROR_CODES_TO_STATUS_CODES[NspError.FORBIDDEN] = FORBIDDEN
 
     def wrap(cls, error):

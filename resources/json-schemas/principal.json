@@ -15,10 +15,6 @@
                 "type": "string"
             },
             "uniqueItems": true
-        },
-        "created": {
-            "type": "string",
-            "format": "date-time"
         }
     },
     "additionalProperties": true,

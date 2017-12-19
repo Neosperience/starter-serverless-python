@@ -2,7 +2,9 @@ from datetime import datetime
 
 
 class NspError(Exception):
-    ENTITY_NOT_FOUND = 'ENTITY_NOT_FOUND'
+    THING_NOT_FOUND = 'THING_NOT_FOUND'
+    THING_ALREADY_EXISTS = 'THING_ALREADY_EXISTS'
+    THING_UNPROCESSABLE = 'THING_UNPROCESSABLE'
     FORBIDDEN = 'FORBIDDEN'
 
     def __init__(self, code, message, causes=[]):

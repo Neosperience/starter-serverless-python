@@ -92,22 +92,28 @@ class HttpErrorSpec(unittest.TestCase):
 
     def test_wrapNspError(self):
         'It should wrap the NspError with the expected attributes'
-        nspError = NspError(NspError.ENTITY_NOT_FOUND, 'message', ['causes'])
+        nspError = NspError(NspError.THING_NOT_FOUND, 'message', ['causes'])
         e = HttpError.wrap(nspError)
         self.assertEqual(e.message, nspError.message)
         self.assertEqual(e.causes, nspError.causes)
         self.assertEqual(e.timestamp, nspError.timestamp)
 
-    def test_wrap_ENTITY_NOT_FOUND(self):
-        'It should wrap the ENTITY_NOT_FOUND NspError'
-        e = HttpError.wrap(NspError(NspError.ENTITY_NOT_FOUND, 'message'))
-        self.assertEqual(e.statusCode, 404)
-        self.assertEqual(e.message, 'message')
-
     def test_wrap_FORBIDDEN(self):
         'It should wrap the FORBIDDEN NspError'
         e = HttpError.wrap(NspError(NspError.FORBIDDEN, 'message'))
         self.assertEqual(e.statusCode, 403)
+        self.assertEqual(e.message, 'message')
+
+    def test_wrap_THING_NOT_FOUND(self):
+        'It should wrap the THING_NOT_FOUND NspError'
+        e = HttpError.wrap(NspError(NspError.THING_NOT_FOUND, 'message'))
+        self.assertEqual(e.statusCode, 404)
+        self.assertEqual(e.message, 'message')
+
+    def test_wrap_THING_UNPROCESSABLE(self):
+        'It should wrap the THING_UNPROCESSABLE NspError'
+        e = HttpError.wrap(NspError(NspError.THING_UNPROCESSABLE, 'message'))
+        self.assertEqual(e.statusCode, 422)
         self.assertEqual(e.message, 'message')
 
     def test_wrapException(self):

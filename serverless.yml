@@ -46,12 +46,48 @@ resources:
                 Stage: ${self:provider.stage}
 
 functions:
-    get-entity:
-        handler: src/entity/lambdas/get_entity.handler
+    create-thing:
+        handler: src/thing/lambdas/create_thing.handler
         timeout: 30
         events:
             - http:
-                path: entity/{uuid}
+                path: thing
+                method: post
+                cors: true
+                authorizer: ${self:custom.authorizer}
+    get-thing:
+        handler: src/thing/lambdas/get_thing.handler
+        timeout: 30
+        events:
+            - http:
+                path: thing/{uuid}
+                method: get
+                cors: true
+                authorizer: ${self:custom.authorizer}
+    update-thing:
+        handler: src/thing/lambdas/update_thing.handler
+        timeout: 30
+        events:
+            - http:
+                path: thing/{uuid}
+                method: put
+                cors: true
+                authorizer: ${self:custom.authorizer}
+    delete-thing:
+        handler: src/thing/lambdas/delete_thing.handler
+        timeout: 30
+        events:
+            - http:
+                path: thing/{uuid}
+                method: delete
+                cors: true
+                authorizer: ${self:custom.authorizer}
+    list-things:
+        handler: src/thing/lambdas/list_things.handler
+        timeout: 30
+        events:
+            - http:
+                path: thing
                 method: get
                 cors: true
                 authorizer: ${self:custom.authorizer}

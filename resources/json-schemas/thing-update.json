@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Thing",
+    "description": "Neosperience Thing",
+    "type": "object",
+    "properties": {
+        "uuid": {
+            "type": "string"
+        },
+        "owner": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "created": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "lastModified": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "additionalProperties": true,
+    "required": ["uuid", "owner", "name", "description", "created", "lastModified"]
+}
