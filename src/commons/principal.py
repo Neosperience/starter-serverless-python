@@ -30,7 +30,10 @@ class Principal:
         errors = []
         for property in readOnlyProperties:
             if not oldEntity[property] == newEntity[property]:
-                errors.append('Cannot change read-only property: ' + property)
+                errors.append(
+                    'Cannot change read-only property {0} from "{1}" to "{2}"',
+                    property, oldEntity[property], newEntity[property]
+                )
         if errors:
             raise NspError(errorCode, 'Cannot change read-only properties', errors)
 
