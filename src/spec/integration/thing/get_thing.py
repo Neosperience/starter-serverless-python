@@ -129,7 +129,6 @@ class GetThingLambdaSpec(unittest.TestCase):
             }
         }
         response = handler(event)
-        print(response)
         self.assertEqual(response['statusCode'], 404)
         self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
         body = json.loads(response['body'])

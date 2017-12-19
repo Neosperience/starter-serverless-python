@@ -41,12 +41,12 @@ def Logic(repository):
             return getAndCheckThing(principal, uuid)
 
         def updateThing(self, principal, uuid, newThing):
-            thing = getAndCheckThing(uuid)
+            thing = getAndCheckThing(principal, uuid)
             checkUpdate(principal, thing, newThing)
             return repository.updateThing(newThing)
 
         def deleteThing(self, principal, uuid):
-            thing = getAndCheckThing(uuid)
+            thing = getAndCheckThing(principal, uuid)
             checkDelete(principal, thing)
             return repository.deleteThing(uuid)
 

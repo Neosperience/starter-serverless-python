@@ -52,7 +52,7 @@ def LambdaMapper(authorizer, apiGatewayFactory):
             apiGateway = apiGatewayFactory(event)
             try:
                 principal = apiGateway.getAndValidatePrincipal()
-                owner = apiGateway.getQueryParameter('owner')
+                owner = apiGateway.getQueryStringParameter('owner')
                 result = authorizer.listThings(principal, owner)
                 return apiGateway.createResponse(body=result)
             except Exception as error:
