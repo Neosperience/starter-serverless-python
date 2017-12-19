@@ -4,3 +4,4 @@
 
 * validazione config
 * logger
+* If-Modified-Since
