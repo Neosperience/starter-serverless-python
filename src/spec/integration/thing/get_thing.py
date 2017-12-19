@@ -129,6 +129,7 @@ class GetThingLambdaSpec(unittest.TestCase):
             }
         }
         response = handler(event)
+        print(response)
         self.assertEqual(response['statusCode'], 404)
         self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
         body = json.loads(response['body'])
@@ -143,7 +144,7 @@ class GetThingLambdaSpec(unittest.TestCase):
     def test_404NotOwned(self):
         'Should return a 404 response if the thing is not owned'
         self.principal['organizationId'] = 'ANOTHER'
-        uuid = 'dario'
+        uuid = '002'
         event = {
             'httpMethod': 'GET',
             'path': '/thing/{0}'.format(uuid),
@@ -167,15 +168,15 @@ class GetThingLambdaSpec(unittest.TestCase):
         body = json.loads(response['body'])
         self.assertEqual(body['statusCode'], 404)
         self.assertEqual(body['statusReason'], 'Not found')
-        self.assertEqual(body['message'], 'Thing "dario" not found')
+        self.assertEqual(body['message'], 'Thing "{0}" not found'.format(uuid))
         self.assertEqual(body['causes'], [])
         self.assertEqual(body['method'], 'GET')
-        self.assertEqual(body['resource'], 'http://localhost/thing/dario')
+        self.assertEqual(body['resource'], 'http://localhost/thing/{0}'.format(uuid))
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
     def test_200(self):
         'Should return a 200 response with the requested thing'
-        uuid = 'dario'
+        uuid = '001'
         event = {
             'httpMethod': 'GET',
             'path': '/thing/{0}'.format(uuid),
