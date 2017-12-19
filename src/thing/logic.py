@@ -11,7 +11,11 @@ def Logic(repository):
 
     def checkUpdate(principal, oldThing, newThing):
         principal.checkReadOnlyProperties(
-            oldThing, newThing, ['uuid', 'created', 'lastModified'], NspError.THING_UNPROCESSABLE)
+            oldThing,
+            newThing,
+            ['uuid', 'created', 'lastModified'],
+            NspError.THING_UNPROCESSABLE
+        )
 
     def checkDelete(principal, thing):
         pass
@@ -26,14 +30,14 @@ def Logic(repository):
 
     class Service:
         def createThing(self, principal, thing):
-            if thing.uuid is not None:
+            if thing.get('uuid') is not None:
                 existing = repository.getThing(thing.uuid)
                 if existing is not None:
                     raise NspError(NspError.THING_ALREADY_EXISTS, 'Thing "{0}" already exists'.format(uuid))
             else:
-                thing.uuid = str(uuid.uuid4())
-            thing.created = datetime.now()
-            thing.lastModified = thing.created
+                thing['uuid'] = str(uuid.uuid4())
+            thing['created'] = datetime.now()
+            thing['lastModified'] = thing['created']
             checkCreate(principal, thing)
             return repository.createThing(thing)
 
@@ -43,6 +47,7 @@ def Logic(repository):
         def updateThing(self, principal, uuid, newThing):
             thing = getAndCheckThing(principal, uuid)
             checkUpdate(principal, thing, newThing)
+            thing['lastModified'] = datetime.now()
             return repository.updateThing(newThing)
 
         def deleteThing(self, principal, uuid):
