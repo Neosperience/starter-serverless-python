@@ -73,7 +73,7 @@ class PrincipalCheckReadOnlyProperties(unittest.TestCase):
         self.assertEqual(cm.exception.code, 'code')
         self.assertEqual(cm.exception.message, 'Cannot change read-only properties')
         self.assertEqual(cm.exception.causes, [
-            'Cannot change read-only property: uuid'
+            'Cannot change read-only property uuid from \'uuid1\' to \'uuid2\''
         ])
 
     def testRaisesForNonAdmin(self):
@@ -86,8 +86,8 @@ class PrincipalCheckReadOnlyProperties(unittest.TestCase):
         self.assertEqual(cm.exception.code, 'code')
         self.assertEqual(cm.exception.message, 'Cannot change read-only properties')
         self.assertEqual(cm.exception.causes, [
-            'Cannot change read-only property: uuid',
-            'Cannot change read-only property: owner'
+            'Cannot change read-only property uuid from \'uuid1\' to \'uuid2\'',
+            'Cannot change read-only property owner from \'owner1\' to \'owner2\''
         ])
 
     def testReturns(self):
