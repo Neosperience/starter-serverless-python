@@ -4,6 +4,9 @@
     "description": "Neosperience Thing",
     "type": "object",
     "properties": {
+        "uuid": {
+            "type": "string"
+        },
         "owner": {
             "type": "string"
         },
@@ -14,6 +17,6 @@
             "type": "string"
         }
     },
-    "additionalProperties": true,
+    "additionalProperties": false,
     "required": ["name", "description"]
 }

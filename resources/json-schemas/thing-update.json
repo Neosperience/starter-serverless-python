@@ -25,6 +25,6 @@
             "format": "date-time"
         }
     },
-    "additionalProperties": true,
+    "additionalProperties": false,
     "required": ["uuid", "owner", "name", "description", "created", "lastModified"]
 }
