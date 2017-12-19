@@ -1,5 +1,5 @@
 from datetime import datetime
-import uuid
+from uuid import uuid4
 
 from src.commons.nsp_error import NspError
 
@@ -31,11 +31,11 @@ def Logic(repository):
     class Service:
         def createThing(self, principal, thing):
             if thing.get('uuid') is not None:
-                existing = repository.getThing(thing.uuid)
+                existing = repository.getThing(thing['uuid'])
                 if existing is not None:
-                    raise NspError(NspError.THING_ALREADY_EXISTS, 'Thing "{0}" already exists'.format(uuid))
+                    raise NspError(NspError.THING_ALREADY_EXISTS, 'Thing "{0}" already exists'.format(thing['uuid']))
             else:
-                thing['uuid'] = str(uuid.uuid4())
+                thing['uuid'] = str(uuid4())
             thing['created'] = datetime.now()
             thing['lastModified'] = thing['created']
             checkCreate(principal, thing)
