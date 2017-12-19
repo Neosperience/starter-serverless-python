@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 def Repository():
 
-    created = datetime(year=2103, month=1, day=31, hour=3, minute=45, second=1.234)
-    lastModified = datetime(year=2108, month=1, day=1, hour=12, minute=12, second=12.345)
+    created = datetime(year=2103, month=1, day=31, hour=3, minute=45, second=1, microsecond=234000)
+    lastModified = datetime(year=2108, month=1, day=1, hour=12, minute=12, second=12, microsecond=345000)
     data = {
         '001': {
             'uuid': '001',
