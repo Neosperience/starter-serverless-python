@@ -333,7 +333,7 @@ class APIGatewayCreateLocationHeader(unittest.TestCase):
         sut.getHttpResource = MagicMock(return_value='http-resource')
         uuid = 'uuid'
         location = sut.createLocationHeader(uuid)
-        self.assertEqual(location, 'http-resource/uuid')
+        self.assertEqual(location, {'Location': 'http-resource/uuid'})
 
 
 class APIGatewayCreateResponse(unittest.TestCase):

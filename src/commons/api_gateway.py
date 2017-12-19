@@ -1,7 +1,9 @@
 import json
 import re
+import email.utils
 
 import jsonschema
+import dateutil.parser
 
 import src.commons.jsonutils as jsonutils
 from src.commons.http_error import HttpError
@@ -147,8 +149,32 @@ class APIGateway:
         )
         return entity
 
+    def wasModifiedSince(self, entity):
+        ifModifiedSince = self.eventGet('headers.If-Modified-Since')
+        if ifModifiedSince is None:
+            return True
+        try:
+            ifModifiedSince = int(dateutil.parser.parse(ifModifiedSince).timestamp())
+            lastModified = int(entity['lastModified'].timestamp())
+            return lastModified > ifModifiedSince
+        except Exception as e:
+            raise HttpError(
+                HttpError.BAD_REQUEST,
+                'Invalid If-Modified-Since header: "{0}"'.format(ifModifiedSince),
+                repr(e)
+            )
+
+    def createLastModifiedHeader(self, entity):
+        return {
+            'Last-Modified': email.utils.formatdate(
+                timeval=entity['lastModified'].timestamp(),
+                localtime=False,
+                usegmt=True
+            )
+        }
+
     def createLocationHeader(self, uuid):
-        return self.getHttpResource() + '/' + uuid
+        return {'Location': self.getHttpResource() + '/' + uuid}
 
     def createErrorResponse(self, error):
         if not isinstance(error, HttpError):

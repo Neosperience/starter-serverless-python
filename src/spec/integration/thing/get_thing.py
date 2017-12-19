@@ -1,7 +1,9 @@
 import json
 import unittest
+import email.utils
 
 from src.thing.lambdas.get_thing import handler
+from src.commons.jsonutils import json2datetime
 
 ISO_DATETIME_Z_REGEX = '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$'
 
@@ -195,8 +197,15 @@ class GetThingLambdaSpec(unittest.TestCase):
         }
         response = handler(event)
         self.assertEqual(response['statusCode'], 200)
-        self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
         body = json.loads(response['body'])
+        self.assertEqual(response['headers'], {
+            'Access-Control-Allow-Origin': '*',
+            'Last-Modified': email.utils.formatdate(
+                timeval=json2datetime(body['lastModified']).timestamp(),
+                localtime=False,
+                usegmt=True
+            )
+        })
         self.assertEqual(body['uuid'], uuid)
         self.assertEqual(body['owner'], self.principal['organizationId'])
         self.assertIsInstance(body['name'], str)

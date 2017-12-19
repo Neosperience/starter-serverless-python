@@ -18,6 +18,7 @@ class LambdaMapperGetThing(unittest.TestCase):
         'ThingLambdaMapper.getThing() should call the right methods with the right parameters'
         self.apiGateway.getAndValidatePrincipal.return_value = 'principal'
         self.apiGateway.getPathParameter.return_value = 'uuid'
+        self.apiGateway.createLastModifiedHeader.return_value = 'last-modified-header'
         self.apiGateway.createResponse.return_value = None
         self.authorizer.getThing.return_value = 'thing'
 
@@ -27,7 +28,8 @@ class LambdaMapperGetThing(unittest.TestCase):
         self.apiGateway.getAndValidatePrincipal.assert_called_once_with()
         self.apiGateway.getPathParameter.assert_called_once_with('uuid', required=True)
         self.authorizer.getThing.assert_called_once_with('principal', 'uuid')
-        self.apiGateway.createResponse.assert_called_once_with(body='thing')
+        self.apiGateway.createLastModifiedHeader.assert_called_once_with('thing')
+        self.apiGateway.createResponse.assert_called_once_with(body='thing', headers='last-modified-header')
 
     def test_ItReturnsResultResponseOnInvalidPrincipal(self):
         'ThingLambdaMapper.getThing() should call apiGateway.createErrorResponse() if the principal is not valid'
