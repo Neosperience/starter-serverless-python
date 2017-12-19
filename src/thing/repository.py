@@ -37,7 +37,7 @@ def Repository():
             return thing
 
         def getThing(self, uuid):
-            return data[uuid]
+            return data.get(uuid)
 
         def updateThing(self, uuid, thing):
             data[thing.uuid] = thing
@@ -47,6 +47,6 @@ def Repository():
             del data[uuid]
 
         def listThings(self, owner):
-            return [thing in data.values() if owner is none or thing.owner == owner]
+            return [thing for thing in data.values() if owner is none or thing.owner == owner]
 
     return Service()
