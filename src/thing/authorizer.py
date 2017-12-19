@@ -6,7 +6,7 @@ def Authorizer(logic):
     class Service:
         def createThing(self, principal, thing):
             principal.checkAuthorization({'ROLE_ADMIN', 'ROLE_THING_USER'}, 'create things')
-            thing.owner = principal.getOwner(thing.owner)
+            thing['owner'] = principal.getOwner(thing['owner'])
             return logic.createThing(principal, thing)
 
         def getThing(self, principal, uuid):

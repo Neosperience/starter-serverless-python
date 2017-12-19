@@ -47,6 +47,6 @@ def Repository():
             del data[uuid]
 
         def listThings(self, owner):
-            return [thing for thing in data.values() if owner is none or thing.owner == owner]
+            return [thing for thing in data.values() if owner is None or thing.owner == owner]
 
     return Service()
