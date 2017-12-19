@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 def Repository():
 
-    created = datetime(year=2103, month=1, day=31, hour=3, minute=45, second=0)
-    lastModified = datetime(year=2108, month=1, day=1, hour=12, minute=12, second=12)
+    created = datetime(year=2103, month=1, day=31, hour=3, minute=45, second=1.234)
+    lastModified = datetime(year=2108, month=1, day=1, hour=12, minute=12, second=12.345)
     data = {
         '001': {
             'uuid': '001',
@@ -25,7 +25,7 @@ def Repository():
         '003': {
             'uuid': '003',
             'owner': 'ORG001',
-            'name': 'Thing2',
+            'name': 'Thing3',
             'description': 'Thing 003',
             'created': created + timedelta(hours=2),
             'lastModified': lastModified + timedelta(hours=2)
@@ -40,7 +40,7 @@ def Repository():
         def getThing(self, uuid):
             return data.get(uuid)
 
-        def updateThing(self, uuid, thing):
+        def updateThing(self, thing):
             data[thing['uuid']] = thing
             return thing
 
