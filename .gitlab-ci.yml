@@ -3,7 +3,7 @@ test:
   script:
     - pip3 install -r dev_requirements.txt
     - pycodestyle src
-    - copy config/config-ci.json config/config.json
+    - cp config/config-ci.json config/config.json
     - coverage run -m unittest src/spec/*/*/*.py -v
     - coverage report
 
