@@ -8,13 +8,13 @@
         },
         "handlers": {
             "console": {
-                "level": "${LOGGING_LEVEL}",
+                "level": "INFO",
                 "class": "logging.StreamHandler",
                 "formatter": "simple"
             }
         },
         "root": {
-            "level": ${LOGGING_LEVEL},
+            "level": "INFO",
             "handlers": ["console"]
         }
     }
