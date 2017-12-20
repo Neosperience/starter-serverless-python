@@ -12,7 +12,8 @@ def loadConfig():
         config = json.load(open(CONFIG_FILE_NAME))
         schema = json.load(open(SCHEMA_FILE_NAME))
     except Exception as error:
-        raise NspError(NspError.INTERNAL_SERVER_ERROR, 'Could not load configuration', [str(error)])
+        print(error)
+        raise NspError(NspError.INTERNAL_SERVER_ERROR, 'Could not load configuration', [str(error), repr(error)])
     try:
         jsonschema.Draft4Validator.check_schema(schema)
     except jsonschema.SchemaError as error:
