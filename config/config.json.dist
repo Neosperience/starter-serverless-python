@@ -1,1 +1,7 @@
-{}
+{
+    "logging": {
+        "root": {
+            "level": "DEBUG"
+        }
+    }
+}

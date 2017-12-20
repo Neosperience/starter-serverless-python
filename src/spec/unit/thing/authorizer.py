@@ -2,13 +2,14 @@ import unittest
 from unittest.mock import MagicMock
 from src.commons.nsp_error import NspError
 from src.thing.authorizer import Authorizer
+from src.spec.helper import mockLoggerFactory
 
 
 class AuthorizerGetThing(unittest.TestCase):
     def setUp(self):
         self.logic = MagicMock()
         self.principal = MagicMock()
-        self.sut = Authorizer(self.logic)
+        self.sut = Authorizer(mockLoggerFactory, self.logic)
 
     def test_ItCallsCheckAuthorization(self):
         'ThingAuthorizer.getThing() should call principal.checkAuthorization() and logic.getThing()'

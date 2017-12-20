@@ -1,0 +1,9 @@
+{
+    "type": "object",
+    "properties": {
+        "logging": {
+            "type": "object"
+        }
+    },
+    "additionalProperties": false
+}

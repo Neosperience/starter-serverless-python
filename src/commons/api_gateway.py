@@ -72,9 +72,9 @@ def getAndValidateJSON(string, name, schema, missingErrorFactory, malformedError
 
 class APIGateway:
 
-    def __init__(self, event):
-        # print('APIGateway.__init__: event = {0}'.format(event))
+    def __init__(self, loggerFactory, event):
         self.event = event
+        self.logger = loggerFactory(__name__)
 
     def eventGet(self, path, default=None):
         return getAtPath(self.event, path, default)

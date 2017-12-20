@@ -1,10 +1,13 @@
+import logging
 from datetime import datetime
 from uuid import uuid4
 
 from src.commons.nsp_error import NspError
 
 
-def Logic(repository):
+def Logic(loggerFactory, repository):
+
+    logger = loggerFactory(__name__)
 
     def checkCreate(principal, thing):
         pass
@@ -30,6 +33,7 @@ def Logic(repository):
 
     class Service:
         def createThing(self, principal, thing):
+            logger.debug('createThing(): principal=%s, thing=%s', principal, thing)
             if thing.get('uuid') is not None:
                 existing = repository.getThing(thing['uuid'])
                 if existing is not None:
@@ -42,20 +46,24 @@ def Logic(repository):
             return repository.createThing(thing)
 
         def getThing(self, principal, uuid):
+            logger.debug('createThing(): principal=%s, uuid=%s', principal, uuid)
             return getAndCheckThing(principal, uuid)
 
         def updateThing(self, principal, uuid, newThing):
+            logger.debug('createThing(): principal=%s, uuid=%s, thing=%s', principal, uuid, newThing)
             thing = getAndCheckThing(principal, uuid)
             checkUpdate(principal, thing, newThing)
             thing['lastModified'] = datetime.now()
             return repository.updateThing(newThing)
 
         def deleteThing(self, principal, uuid):
+            logger.debug('createThing(): principal=%s, uuid=%s', principal, uuid)
             thing = getAndCheckThing(principal, uuid)
             checkDelete(principal, thing)
             return repository.deleteThing(uuid)
 
         def listThings(self, principal, owner):
+            logger.debug('createThing(): principal=%s, owner=%s', principal, owner)
             return repository.listThings(owner)
 
     return Service()

@@ -3,12 +3,13 @@ from unittest.mock import MagicMock
 from src.commons.principal import Principal
 from src.commons.nsp_error import NspError
 from src.thing.logic import Logic
+from src.spec.helper import mockLoggerFactory
 
 
 class LogicGetThing(unittest.TestCase):
     def setUp(self):
         self.repository = MagicMock()
-        self.sut = Logic(self.repository)
+        self.sut = Logic(mockLoggerFactory, self.repository)
 
     def test_ThingNotFound(self):
         'ThingLogic.getThing() should throw THING_NOT_FOUND NspError if repository.getThing() returns None'

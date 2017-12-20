@@ -1,15 +1,18 @@
 import json
+import logging
 
 
-def LambdaMapper(authorizer, apiGatewayFactory):
+def LambdaMapper(loggerFactory, apiGatewayFactory, authorizer):
 
     with open('resources/json-schemas/thing-create.json') as infile:
         thingCreateSchema = json.load(infile)
     with open('resources/json-schemas/thing-update.json') as infile:
         thingUpdateSchema = json.load(infile)
+    logger = loggerFactory(__name__)
 
     class Service:
         def createThing(self, event):
+            logger.debug('createThing(): event=%s', event)
             apiGateway = apiGatewayFactory(event)
             try:
                 principal = apiGateway.getAndValidatePrincipal()
@@ -24,6 +27,7 @@ def LambdaMapper(authorizer, apiGatewayFactory):
                 return apiGateway.createErrorResponse(error)
 
         def getThing(self, event):
+            logger.debug('getThing(): event=%s', event)
             apiGateway = apiGatewayFactory(event)
             try:
                 principal = apiGateway.getAndValidatePrincipal()
@@ -40,6 +44,7 @@ def LambdaMapper(authorizer, apiGatewayFactory):
                 return apiGateway.createErrorResponse(error)
 
         def updateThing(self, event):
+            logger.debug('updateThing(): event=%s', event)
             apiGateway = apiGatewayFactory(event)
             try:
                 principal = apiGateway.getAndValidatePrincipal()
@@ -51,6 +56,7 @@ def LambdaMapper(authorizer, apiGatewayFactory):
                 return apiGateway.createErrorResponse(error)
 
         def deleteThing(self, event):
+            logger.debug('deleteThing(): event=%s', event)
             apiGateway = apiGatewayFactory(event)
             try:
                 principal = apiGateway.getAndValidatePrincipal()
@@ -61,6 +67,7 @@ def LambdaMapper(authorizer, apiGatewayFactory):
                 return apiGateway.createErrorResponse(error)
 
         def listThings(self, event):
+            logger.debug('listThings(): event=%s', event)
             apiGateway = apiGatewayFactory(event)
             try:
                 principal = apiGateway.getAndValidatePrincipal()

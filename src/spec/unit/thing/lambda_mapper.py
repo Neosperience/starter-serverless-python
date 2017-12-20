@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 from src.commons.principal import Principal
 from src.commons.nsp_error import NspError
 from src.thing.lambda_mapper import LambdaMapper
+from src.spec.helper import mockLoggerFactory
 
 
 class LambdaMapperGetThing(unittest.TestCase):
@@ -12,7 +13,7 @@ class LambdaMapperGetThing(unittest.TestCase):
         self.authorizer = MagicMock()
         self.apiGateway = MagicMock()
         self.apiGatewayFactory = MagicMock(return_value=self.apiGateway)
-        self.sut = LambdaMapper(self.authorizer, self.apiGatewayFactory)
+        self.sut = LambdaMapper(mockLoggerFactory, self.apiGatewayFactory, self.authorizer)
 
     def test_ItCallsMethods(self):
         'ThingLambdaMapper.getThing() should call the right methods with the right parameters'

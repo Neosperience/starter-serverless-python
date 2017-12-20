@@ -12,6 +12,9 @@ class Principal:
     def __init__(self, principal):
         self.__dict__ = principal
 
+    def __str__(self):
+        return str(self.__dict__)
+
     def isAdmin(self):
         return self.ROLE_ADMIN in self.roles
 
