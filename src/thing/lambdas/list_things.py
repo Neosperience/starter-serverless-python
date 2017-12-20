@@ -6,10 +6,11 @@ def oldHandler(event, context=None, container=Container()):
         return container.thingLambdaMapper().listThings(event)
     finally:
         container.shutdown()
-def handler(event, context):
-    container = None
+
+
+def handler(event, context, container=None):
     try:
-        container=Container()
+        container = Container()
         return container.thingLambdaMapper().listThings(event)
     finally:
         if container:
