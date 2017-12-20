@@ -20,7 +20,7 @@ deploy-experiments:
     SERVERLESS_STAGE: dev
     SERVERLESS_REGION: eu-west-1
     SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME: starter-python.experiments.neosperiencecloud.com
-    CONFIG_LOGGING_LEVEL: debug
+    CONFIG_LOGGING_LEVEL: DEBUG
   before_script:
     - npm install
   script:

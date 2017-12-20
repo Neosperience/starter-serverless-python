@@ -7,15 +7,21 @@ package:
         - node_modules/**
         - temp/**
         - src/spec/**
+        - src/prove/**
+        - scripts/**
+        - htmlcov/**
         - .*
+        - __pycache__
         - deploy.sh
         - package.json
         - package-lock.json
         - requirements.txt
         - dev_requirements.txt
         - tox.ini
+        - README.md
     include:
         - config/config.json
+        - config/schema.json
 
 provider:
     name: aws
