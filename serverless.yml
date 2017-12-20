@@ -5,13 +5,14 @@ package:
         - .git/**
         - .serveless/**
         - node_modules/**
+        - config/**
+        - __pycache__/**
         - temp/**
         - src/spec/**
         - src/prove/**
         - scripts/**
         - htmlcov/**
         - .*
-        - __pycache__
         - deploy.sh
         - package.json
         - package-lock.json
