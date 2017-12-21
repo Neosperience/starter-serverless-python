@@ -409,9 +409,7 @@ class APIGatewayCreateErrorResponse(unittest.TestCase):
         self.assertEqual(body['message'], httpError.message)
         self.assertEqual(body['method'], httpError.method)
         self.assertEqual(body['resource'], httpError.resource)
-        self.assertIsInstance(body['causes'], list)
-        self.assertIs(len(body['causes']), 1)
-        print(httpError.message)
+        self.assertEqual(body['causes'], [])
 
 
 class APIGatewayGetAndValidateEntity(unittest.TestCase):

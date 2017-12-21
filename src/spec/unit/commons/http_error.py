@@ -1,5 +1,7 @@
-import unittest
 import datetime
+import sys
+import traceback
+import unittest
 
 from src.commons.nsp_error import NspError
 from src.commons.http_error import HttpError
@@ -118,10 +120,11 @@ class HttpErrorSpec(unittest.TestCase):
 
     def test_wrapException(self):
         'It should wrap an Exception with the expected attributes'
-        exception = None
-        e = HttpError.wrap(exception)
-        self.assertEqual(e.statusCode, HttpError.INTERNAL_SERVER_ERROR)
-        self.assertEqual(e.message, repr(exception))
-        self.assertIsInstance(e.causes, list)
-        self.assertIs(len(e.causes), 1)
-        self.assertIsInstance(e.timestamp, datetime.datetime)
+        try:
+            raise(Exception('hello'))
+        except Exception as exception:
+            e = HttpError.wrap(exception)
+            self.assertEqual(e.statusCode, HttpError.INTERNAL_SERVER_ERROR)
+            self.assertEqual(e.message, repr(exception) + ':\n' + ''.join(traceback.format_tb(sys.exc_info()[2])))
+            self.assertEqual(e.causes, [])
+            self.assertIsInstance(e.timestamp, datetime.datetime)
