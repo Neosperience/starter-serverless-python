@@ -13,8 +13,10 @@ __all__ = ['APIGateway']
 
 API_GATEWAY_URL_MATCHER = re.compile('\\.execute-api\\..*\\.amazonaws\\.com$')
 APPLICATION_JSON_MATCHER = re.compile('^application/json')
+PRINCIPAL_SCHEMA_FILE_NAME = 'resources/json-schemas/principal.json'
 
-principalSchema = json.load(open('resources/json-schemas/principal.json'))
+with open(PRINCIPAL_SCHEMA_FILE_NAME) as infile:
+    principalSchema = json.load(infile)
 
 
 # TODO gestire list

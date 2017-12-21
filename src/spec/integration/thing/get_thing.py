@@ -35,7 +35,7 @@ class GetThingLambdaSpec(unittest.TestCase):
                 'uuid': uuid
             }
         }
-        response = handler(event)
+        response = handler(event, None)
         self.assertEqual(response['statusCode'], 401)
         self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
         body = json.loads(response['body'])
@@ -65,7 +65,7 @@ class GetThingLambdaSpec(unittest.TestCase):
             },
             'pathParameters': None
         }
-        response = handler(event)
+        response = handler(event, None)
         self.assertEqual(response['statusCode'], 400)
         self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
         body = json.loads(response['body'])
@@ -98,7 +98,7 @@ class GetThingLambdaSpec(unittest.TestCase):
                 'uuid': uuid
             }
         }
-        response = handler(event)
+        response = handler(event, None)
         self.assertEqual(response['statusCode'], 403)
         self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
         body = json.loads(response['body'])
@@ -130,7 +130,7 @@ class GetThingLambdaSpec(unittest.TestCase):
                 'uuid': uuid
             }
         }
-        response = handler(event)
+        response = handler(event, None)
         self.assertEqual(response['statusCode'], 404)
         self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
         body = json.loads(response['body'])
@@ -163,7 +163,7 @@ class GetThingLambdaSpec(unittest.TestCase):
                 'uuid': uuid
             }
         }
-        response = handler(event)
+        response = handler(event, None)
         self.assertEqual(response['statusCode'], 404)
         self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
         body = json.loads(response['body'])
@@ -195,7 +195,7 @@ class GetThingLambdaSpec(unittest.TestCase):
                 'uuid': uuid
             }
         }
-        response = handler(event)
+        response = handler(event, None)
         self.assertEqual(response['statusCode'], 200)
         body = json.loads(response['body'])
         self.assertEqual(response['headers'], {

@@ -4,9 +4,12 @@ import logging
 
 def LambdaMapper(loggerFactory, apiGatewayFactory, authorizer):
 
-    with open('resources/json-schemas/thing-create.json') as infile:
+    CREATE_SCHEMA_FILE_NAME = 'resources/json-schemas/thing-create.json'
+    UPDATE_SCHEMA_FILE_NAME = 'resources/json-schemas/thing-update.json'
+
+    with open(CREATE_SCHEMA_FILE_NAME) as infile:
         thingCreateSchema = json.load(infile)
-    with open('resources/json-schemas/thing-update.json') as infile:
+    with open(UPDATE_SCHEMA_FILE_NAME) as infile:
         thingUpdateSchema = json.load(infile)
     logger = loggerFactory(__name__)
 

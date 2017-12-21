@@ -1,8 +1,10 @@
 from src.container import Container
 
 
-def handler(event, context=None, container=Container()):
+def handler(event, context, container=None):
     try:
+        container = container or Container()
         return container.thingLambdaMapper().deleteThing(event)
     finally:
-        container.shutdown()
+        if container:
+            container.shutdown()
