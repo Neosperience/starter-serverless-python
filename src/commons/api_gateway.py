@@ -53,9 +53,11 @@ def parseJSON(string, name, errorFactory):
         raise error
 
 
-def validateJSON(instance, schema, errorFactory):
-    # jsonschema.Draft4Validator.check_schema(schema) (throws SchemaError) per validare lo schema, perché purtroppo
-    # scegliendo esplicitamente il validator si dà per scontato che lo schema sia corretto...
+def validateJSON(instance, name, schema, errorFactory):
+    try:
+        jsonschema.Draft4Validator.check_schema(schema)
+    except SchemaError as error:
+        raise NspError(NspError.INTERNAL_SERVER_ERROR, 'Invalid {0} JSON schema'.format(name), [str(error)])
     validator = jsonschema.Draft4Validator(schema, format_checker=jsonschema.FormatChecker())
     if not validator.is_valid(instance):
         error = errorFactory()
@@ -67,7 +69,7 @@ def getAndValidateJSON(string, name, schema, missingErrorFactory, malformedError
     if string is None:
         raise missingErrorFactory()
     obj = parseJSON(string, name, malformedErrorFactory)
-    validateJSON(obj, schema, invalidErrorFactory)
+    validateJSON(obj, name, schema, invalidErrorFactory)
     jsonutils.convertDatetimeValues(obj)
     return obj
 
