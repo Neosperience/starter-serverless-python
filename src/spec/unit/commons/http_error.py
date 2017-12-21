@@ -122,5 +122,6 @@ class HttpErrorSpec(unittest.TestCase):
         e = HttpError.wrap(exception)
         self.assertEqual(e.statusCode, HttpError.INTERNAL_SERVER_ERROR)
         self.assertEqual(e.message, repr(exception))
-        self.assertEqual(e.causes, [])
+        self.assertIsInstance(e.causes, list)
+        self.assertIs(len(e.causes), 1)
         self.assertIsInstance(e.timestamp, datetime.datetime)

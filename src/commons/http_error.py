@@ -37,7 +37,7 @@ class HttpError(Exception):
             statusCode = cls.ERROR_CODES_TO_STATUS_CODES.get(error.code, cls.INTERNAL_SERVER_ERROR)
             httpError = HttpError(statusCode, error.message, error.causes, error.timestamp)
         else:
-            httpError = HttpError(cls.INTERNAL_SERVER_ERROR, str(error), [traceback.format_stack()])
+            httpError = HttpError(cls.INTERNAL_SERVER_ERROR, repr(error), [traceback.format_stack()])
         return httpError
     wrap = classmethod(wrap)
 

@@ -403,11 +403,15 @@ class APIGatewayCreateErrorResponse(unittest.TestCase):
         httpError.method = sut.getHttpMethod()
         httpError.resource = sut.getHttpResource()
         response = sut.createErrorResponse(error)
-        self.assertEqual(response, {
-            'statusCode': httpError.statusCode,
-            'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps(httpError.__dict__, default=jsonutils.dumpdefault)
-        })
+        self.assertEqual(response['statusCode'], httpError.statusCode)
+        self.assertEqual(response['headers'], {'Access-Control-Allow-Origin': '*'})
+        body = json.loads(response['body'])
+        self.assertEqual(body['message'], httpError.message)
+        self.assertEqual(body['method'], httpError.method)
+        self.assertEqual(body['resource'], httpError.resource)
+        self.assertIsInstance(body['causes'], list)
+        self.assertIs(len(body['causes']), 1)
+        print(httpError.message)
 
 
 class APIGatewayGetAndValidateEntity(unittest.TestCase):
