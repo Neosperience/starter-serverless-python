@@ -145,8 +145,8 @@ class APIGateway:
             self.eventGet('body'),
             name,
             schema,
-            lambda: HttpError(HttpError.BAD_REQUEST, 'Missing entity'),
-            lambda: HttpError(HttpError.BAD_REQUEST, 'Malformed entity JSON'),
+            lambda: HttpError(HttpError.BAD_REQUEST, 'Missing {0}'.format(name)),
+            lambda: HttpError(HttpError.BAD_REQUEST, 'Malformed {0} JSON'.format(name)),
             lambda: HttpError(HttpError.UNPROCESSABLE_ENTITY, 'Invalid {0}'.format(name))
         )
         return entity
