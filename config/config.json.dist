@@ -14,7 +14,7 @@
             }
         },
         "root": {
-            "level": ${CONFIG_LOGGING_LEVEL},
+            "level": "${CONFIG_LOGGING_LEVEL}",
             "handlers": ["console"]
         }
     }
