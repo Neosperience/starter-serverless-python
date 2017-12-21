@@ -46,24 +46,24 @@ def Logic(loggerFactory, repository):
             return repository.createThing(thing)
 
         def getThing(self, principal, uuid):
-            logger.debug('createThing(): principal=%s, uuid=%s', principal, uuid)
+            logger.debug('getThing(): principal=%s, uuid=%s', principal, uuid)
             return getAndCheckThing(principal, uuid)
 
         def updateThing(self, principal, uuid, newThing):
-            logger.debug('createThing(): principal=%s, uuid=%s, thing=%s', principal, uuid, newThing)
+            logger.debug('updateThing(): principal=%s, uuid=%s, thing=%s', principal, uuid, newThing)
             thing = getAndCheckThing(principal, uuid)
             checkUpdate(principal, thing, newThing)
             thing['lastModified'] = datetime.now()
             return repository.updateThing(newThing)
 
         def deleteThing(self, principal, uuid):
-            logger.debug('createThing(): principal=%s, uuid=%s', principal, uuid)
+            logger.debug('deleteThing(): principal=%s, uuid=%s', principal, uuid)
             thing = getAndCheckThing(principal, uuid)
             checkDelete(principal, thing)
             return repository.deleteThing(uuid)
 
         def listThings(self, principal, owner):
-            logger.debug('createThing(): principal=%s, owner=%s', principal, owner)
+            logger.debug('listThings(): principal=%s, owner=%s', principal, owner)
             return repository.listThings(owner)
 
     return Service()
