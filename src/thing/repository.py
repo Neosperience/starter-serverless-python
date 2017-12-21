@@ -56,6 +56,6 @@ def Repository(loggerFactory):
 
         def listThings(self, owner):
             logger.debug('listThings(): owner=%s', owner)
-            return [thing for thing in data.values() if owner is None or thing.owner == owner]
+            return [thing for thing in data.values() if owner is None or thing['owner'] == owner]
 
     return Service()
