@@ -8,6 +8,7 @@ class NspErrorSpec(unittest.TestCase):
     def test_codes(self):
         'All the expected codes should be defined'
         self.assertEqual(NspError.FORBIDDEN, 'FORBIDDEN')
+        self.assertEqual(NspError.INTERNAL_SERVER_ERROR, 'INTERNAL_SERVER_ERROR')
         self.assertEqual(NspError.THING_NOT_FOUND, 'THING_NOT_FOUND')
         self.assertEqual(NspError.THING_UNPROCESSABLE, 'THING_UNPROCESSABLE')
 

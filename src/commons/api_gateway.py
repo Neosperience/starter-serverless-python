@@ -7,6 +7,7 @@ import dateutil.parser
 
 import src.commons.jsonutils as jsonutils
 from src.commons.http_error import HttpError
+from src.commons.nsp_error import NspError
 from src.commons.principal import Principal
 
 __all__ = ['APIGateway']
@@ -17,20 +18,6 @@ PRINCIPAL_SCHEMA_FILE_NAME = 'resources/json-schemas/principal.json'
 
 with open(PRINCIPAL_SCHEMA_FILE_NAME) as infile:
     principalSchema = json.load(infile)
-
-
-# TODO gestire list
-def getAtPath(obj, path, default):
-    if isinstance(path, str):
-        path = path.split('.')
-    for step in path:
-        if not isinstance(obj, dict):
-            obj = None
-            break
-        obj = obj.get(step)
-        if obj is None:
-            break
-    return obj if obj is not None else default
 
 
 def createResponse(statusCode, headers, body):
@@ -56,8 +43,8 @@ def parseJSON(string, name, errorFactory):
 def validateJSON(instance, name, schema, errorFactory):
     try:
         jsonschema.Draft4Validator.check_schema(schema)
-    except SchemaError as error:
-        raise NspError(NspError.INTERNAL_SERVER_ERROR, 'Invalid {0} JSON schema'.format(name), [str(error)])
+    except Exception as schemaError:
+        raise NspError(NspError.INTERNAL_SERVER_ERROR, 'Invalid {0} JSON schema'.format(name), [str(schemaError)])
     validator = jsonschema.Draft4Validator(schema, format_checker=jsonschema.FormatChecker())
     if not validator.is_valid(instance):
         error = errorFactory()
@@ -81,7 +68,7 @@ class APIGateway:
         self.logger = loggerFactory(__name__)
 
     def eventGet(self, path, default=None):
-        return getAtPath(self.event, path, default)
+        return jsonutils.getAtPath(self.event, path, default)
 
     def getHttpMethod(self):
         return self.eventGet('httpMethod', 'UNKNOWN_METHOD')
@@ -165,7 +152,7 @@ class APIGateway:
             raise HttpError(
                 HttpError.BAD_REQUEST,
                 'Invalid If-Modified-Since header: "{0}"'.format(ifModifiedSince),
-                repr(e)
+                [repr(e)]
             )
 
     def createLastModifiedHeader(self, entity):

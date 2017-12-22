@@ -8,6 +8,7 @@ from src.commons.jsonutils import json2datetime
 ISO_DATETIME_Z_REGEX = '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$'
 
 
+# TODO test su If-Modified-Since
 class GetThingLambdaSpec(unittest.TestCase):
     def setUp(self):
         self.principal = {
@@ -15,7 +16,7 @@ class GetThingLambdaSpec(unittest.TestCase):
             'roles': ['ROLE_THING_USER']
         }
 
-    def test_401(self):
+    def test401(self):
         'Should return a 401 response if there is no principal'
         uuid = 'dario'
         event = {
@@ -47,7 +48,7 @@ class GetThingLambdaSpec(unittest.TestCase):
         self.assertEqual(body['resource'], 'http://localhost/thing/dario')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
-    def test_400(self):
+    def test400(self):
         'Should return a 400 response if there is no uuid'
         uuid = 'dario'
         event = {
@@ -77,7 +78,7 @@ class GetThingLambdaSpec(unittest.TestCase):
         self.assertEqual(body['resource'], 'http://localhost/thing/dario')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
-    def test_403(self):
+    def test403(self):
         'Should return a 403 response if the principal is not authorized'
         self.principal['roles'].clear()
         uuid = 'dario'
@@ -110,7 +111,7 @@ class GetThingLambdaSpec(unittest.TestCase):
         self.assertEqual(body['resource'], 'http://localhost/thing/dario')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
-    def test_404NotExists(self):
+    def test404NotExists(self):
         'Should return a 404 response if the thing does not exist'
         uuid = 'unknown'
         event = {
@@ -142,7 +143,7 @@ class GetThingLambdaSpec(unittest.TestCase):
         self.assertEqual(body['resource'], 'http://localhost/thing/unknown')
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
-    def test_404NotOwned(self):
+    def test404NotOwned(self):
         'Should return a 404 response if the thing is not owned'
         self.principal['organizationId'] = 'ANOTHER'
         uuid = '002'
@@ -175,7 +176,7 @@ class GetThingLambdaSpec(unittest.TestCase):
         self.assertEqual(body['resource'], 'http://localhost/thing/{0}'.format(uuid))
         self.assertRegex(body['timestamp'], ISO_DATETIME_Z_REGEX)
 
-    def test_200(self):
+    def test200(self):
         'Should return a 200 response with the requested thing'
         uuid = '001'
         event = {

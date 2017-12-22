@@ -36,6 +36,9 @@ def Repository(loggerFactory):
     }
 
     class Service:
+        def __init__(self, data):
+            self.data = data
+
         def createThing(self, thing):
             logger.debug('createThing(): thing=%s', thing)
             data[thing['uuid']] = thing
@@ -58,4 +61,4 @@ def Repository(loggerFactory):
             logger.debug('listThings(): owner=%s', owner)
             return [thing for thing in data.values() if owner is None or thing['owner'] == owner]
 
-    return Service()
+    return Service(data)

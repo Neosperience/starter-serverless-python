@@ -53,3 +53,21 @@ def convertDatetimeValues(dct):
         return json2datetime(value)
 
     transformDictionary(dct, select, convert)
+
+
+def getAtPath(obj, path, default=None):
+    if isinstance(path, str):
+        path = path.split('.') if path != '' else []
+    for step in path:
+        if obj is None:
+            break
+        if isinstance(obj, dict):
+            obj = obj.get(step)
+        elif isinstance(obj, list):
+            try:
+                obj = obj[int(step)]
+            except Exception:
+                obj = None
+        else:
+            obj = None
+    return obj if obj is not None else default

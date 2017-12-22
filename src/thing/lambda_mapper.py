@@ -65,7 +65,7 @@ def LambdaMapper(loggerFactory, apiGatewayFactory, authorizer):
                 principal = apiGateway.getAndValidatePrincipal()
                 uuid = apiGateway.getPathParameter('uuid', required=True)
                 result = authorizer.deleteThing(principal, uuid)
-                return apiGateway.createResponse(statusCode=204, body=result)
+                return apiGateway.createResponse(statusCode=204)
             except Exception as error:
                 return apiGateway.createErrorResponse(error)
 

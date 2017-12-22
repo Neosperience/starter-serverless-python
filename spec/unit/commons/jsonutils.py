@@ -137,3 +137,61 @@ class JSONUtilsConvertDatetimeValues(unittest.TestCase):
         }
         self.sut(dict1)
         self.assertEqual(dict1, dict2)
+
+
+class JSONUtilsGetAtPath(unittest.TestCase):
+    def setUp(self):
+        self.sut = getAtPath
+        self.dct = {
+            'one': {
+                'two': {
+                    'three': 'hello'
+                },
+                'four': [5, 6]
+            }
+        }
+
+    def testNone(self):
+        'jsonutils.getAtPath() should return None if the path is wrong and no default has been given'
+        self.assertIsNone(self.sut(self.dct, 'a'))
+        self.assertIsNone(self.sut(self.dct, 'one.a'))
+        self.assertIsNone(self.sut(self.dct, 'one.two.a'))
+        self.assertIsNone(self.sut(self.dct, 'one.two.three.a'))
+        self.assertIsNone(self.sut(self.dct, 'one.four.a'))
+        self.assertIsNone(self.sut(self.dct, 'one.four.3'))
+
+    def testDefault(self):
+        'jsonutils.getAtPath() should return the given default if the path is wrong'
+        self.assertIs(self.sut(self.dct, 'a', 'default'), 'default')
+        self.assertIs(self.sut(self.dct, 'one.a', 'default'), 'default')
+        self.assertIs(self.sut(self.dct, 'one.two.a', 'default'), 'default')
+        self.assertIs(self.sut(self.dct, 'one.two.three.a', 'default'), 'default')
+        self.assertIs(self.sut(self.dct, 'one.four.a', 'default'), 'default')
+        self.assertIs(self.sut(self.dct, 'one.four.3', 'default'), 'default')
+
+    def testValueWithoutDefaut(self):
+        'jsonutils.getAtPath() should return the value at path'
+        self.assertIsNone(self.sut(None, ''))
+        self.assertEqual(self.sut(self.dct, ''), self.dct)
+        self.assertEqual(self.sut(self.dct, 'one'), self.dct['one'])
+        self.assertEqual(self.sut(self.dct, 'one.two'), self.dct['one']['two'])
+        self.assertEqual(self.sut(self.dct, 'one.two.three'), self.dct['one']['two']['three'])
+        self.assertEqual(self.sut(self.dct, 'one.four'), self.dct['one']['four'])
+        self.assertEqual(self.sut(self.dct, 'one.four.0'), 5)
+
+    def testValueWithDefault(self):
+        'jsonutils.getAtPath() should return the value at path and ignore the given default'
+        self.assertEqual(self.sut(None, '', 'default'), 'default')
+        self.assertEqual(self.sut(self.dct, '', 'default'), self.dct)
+        self.assertEqual(self.sut(self.dct, 'one', 'default'), self.dct['one'])
+        self.assertEqual(self.sut(self.dct, 'one.two', 'default'), self.dct['one']['two'])
+        self.assertEqual(self.sut(self.dct, 'one.two.three', 'default'), self.dct['one']['two']['three'])
+        self.assertEqual(self.sut(self.dct, 'one.four', 'default'), self.dct['one']['four'])
+        self.assertEqual(self.sut(self.dct, 'one.four.0', 'default'), 5)
+        self.assertEqual(self.sut(None, '', 'default'), 'default')
+        self.assertEqual(self.sut(self.dct, [], 'default'), self.dct)
+        self.assertEqual(self.sut(self.dct, ['one'], 'default'), self.dct['one'])
+        self.assertEqual(self.sut(self.dct, ['one', 'two'], 'default'), self.dct['one']['two'])
+        self.assertEqual(self.sut(self.dct, ['one', 'two', 'three'], 'default'), self.dct['one']['two']['three'])
+        self.assertEqual(self.sut(self.dct, ['one', 'four'], 'default'), self.dct['one']['four'])
+        self.assertEqual(self.sut(self.dct, ['one', 'four', '0'], 'default'), 5)

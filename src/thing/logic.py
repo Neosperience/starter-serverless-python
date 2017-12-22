@@ -53,7 +53,7 @@ def Logic(loggerFactory, repository):
             logger.debug('updateThing(): principal=%s, uuid=%s, thing=%s', principal, uuid, newThing)
             thing = getAndCheckThing(principal, uuid)
             checkUpdate(principal, thing, newThing)
-            thing['lastModified'] = datetime.now()
+            newThing['lastModified'] = datetime.now()
             return repository.updateThing(newThing)
 
         def deleteThing(self, principal, uuid):

@@ -106,6 +106,12 @@ class HttpErrorSpec(unittest.TestCase):
         self.assertEqual(e.statusCode, 403)
         self.assertEqual(e.message, 'message')
 
+    def test_wrap_INTERNAL_SERVER_ERROR(self):
+        'It should wrap the INTERNAL_SERVER_ERROR NspError'
+        e = HttpError.wrap(NspError(NspError.INTERNAL_SERVER_ERROR, 'message'))
+        self.assertEqual(e.statusCode, 500)
+        self.assertEqual(e.message, 'message')
+
     def test_wrap_THING_NOT_FOUND(self):
         'It should wrap the THING_NOT_FOUND NspError'
         e = HttpError.wrap(NspError(NspError.THING_NOT_FOUND, 'message'))

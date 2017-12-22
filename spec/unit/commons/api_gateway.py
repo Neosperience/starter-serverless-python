@@ -1,3 +1,5 @@
+import email.utils
+import datetime
 import json
 import unittest
 from unittest.mock import MagicMock
@@ -7,7 +9,15 @@ from src.commons.http_error import HttpError
 from src.commons.principal import Principal
 import src.commons.jsonutils as jsonutils
 from src.commons.api_gateway import APIGateway
-from src.spec.helper import mockLoggerFactory
+from spec.helper import mockLoggerFactory
+
+
+def formatDateRFC2822(date):
+    return email.utils.formatdate(
+        timeval=date.timestamp(),
+        localtime=False,
+        usegmt=True
+    )
 
 
 class APIGatewayGetHttpMethod(unittest.TestCase):
@@ -337,6 +347,79 @@ class APIGatewayCreateLocationHeader(unittest.TestCase):
         self.assertEqual(location, {'Location': 'http-resource/uuid'})
 
 
+class APIGatewayCreateLastModifiedHeader(unittest.TestCase):
+    def test(self):
+        'APIGateway.createLastModifiedHeader() should return the passed date formatted according to RFC 2822'
+        event = {}
+        sut = APIGateway(mockLoggerFactory, event)
+        entity = {'lastModified': datetime.datetime.now()}
+        lastModified = sut.createLastModifiedHeader(entity)
+        expectedHeader = formatDateRFC2822(entity['lastModified'])
+        self.assertEqual(lastModified, {'Last-Modified': expectedHeader})
+
+
+class APIGatewayWasModifiedSince(unittest.TestCase):
+    def testRaises(self):
+        'APIGateway.wasModifiedSince() should raise if the If-Modified-Since header is not a valid RFC 2822 date'
+        event = {'headers': {'If-Modified-Since': 'hello'}}
+        entity = {'lastModified': datetime.datetime.now()}
+        sut = APIGateway(mockLoggerFactory, event)
+        with self.assertRaises(HttpError) as cm:
+            wasModifiedSince = sut.wasModifiedSince(entity)
+        self.assertEqual(cm.exception.statusCode, 400)
+        self.assertEqual(cm.exception.message, 'Invalid If-Modified-Since header: "hello"')
+        self.assertEqual(cm.exception.causes, ['ValueError(\'Unknown string format\',)'])
+
+    def testReturnsTrueIfHeaderIsNone(self):
+        'APIGateway.wasModifiedSince() should return True if the If-Modified-Since header is None'
+        event = {}
+        entity = {'lastModified': datetime.datetime.now()}
+        sut = APIGateway(mockLoggerFactory, event)
+        wasModifiedSince = sut.wasModifiedSince(entity)
+        self.assertTrue(wasModifiedSince)
+
+    def testReturnsTrueIfLess(self):
+        '''
+        APIGateway.wasModifiedSince() should return True if the If-Modified-Since header's timestamp is less than
+        entity.lastModified's timestamp truncated to the second
+        '''
+        entity = {'lastModified': datetime.datetime.now()}
+        event = {
+            'headers': {
+                'If-Modified-Since': formatDateRFC2822(entity['lastModified'] - datetime.timedelta(hours=1))
+            }
+        }
+        sut = APIGateway(mockLoggerFactory, event)
+        wasModifiedSince = sut.wasModifiedSince(entity)
+        self.assertTrue(wasModifiedSince)
+
+    def testReturnsFalseIfEqual(self):
+        '''
+        APIGateway.wasModifiedSince() should return False if the If-Modified-Since header's timestamp is equal to
+        entity.lastModified's timestamp truncated to the second
+        '''
+        entity = {'lastModified': datetime.datetime.now()}
+        event = {'headers': {'If-Modified-Since': formatDateRFC2822(entity['lastModified'])}}
+        sut = APIGateway(mockLoggerFactory, event)
+        wasModifiedSince = sut.wasModifiedSince(entity)
+        self.assertFalse(wasModifiedSince)
+
+    def testReturnsFalseIfGreater(self):
+        '''
+        APIGateway.wasModifiedSince() should return False if the If-Modified-Since header's timestamp is greater than
+        entity.lastModified's timestamp truncated to the second
+        '''
+        entity = {'lastModified': datetime.datetime.now()}
+        event = {
+            'headers': {
+                'If-Modified-Since': formatDateRFC2822(entity['lastModified'] + datetime.timedelta(hours=1))
+            }
+        }
+        sut = APIGateway(mockLoggerFactory, event)
+        wasModifiedSince = sut.wasModifiedSince(entity)
+        self.assertFalse(wasModifiedSince)
+
+
 class APIGatewayCreateResponse(unittest.TestCase):
     def testWithoutParameters(self):
         '''APIGateway.createResponse() should create a response with statusCode 200, the Access-Control-Allow-Origin
@@ -362,7 +445,6 @@ class APIGatewayCreateResponse(unittest.TestCase):
 
 
 class APIGatewayCreateErrorResponse(unittest.TestCase):
-
     def testWithHttpError(self):
         '''APIGateway.createErrorResponse() should create a response with the statusCode of the passed HttpError, the
         Access-Control-Allow-Origin header and the conversion to json of the __dict__ of the passed HttpError as
@@ -469,6 +551,27 @@ class APIGatewayGetAndValidateEntity(unittest.TestCase):
             sut.getAndValidateEntity(schema, name)
         self.assertEqual(cm.exception.statusCode, 422)
         self.assertEqual(cm.exception.message, 'Invalid entity')
+        self.assertIsInstance(cm.exception.causes, list)
+        self.assertGreater(len(cm.exception.causes), 0)
+        for i in range(len(cm.exception.causes)):
+            with self.subTest(i=i):
+                self.assertIsInstance(cm.exception.causes[i], str)
+
+    def testInvalidJSONSchema(self):
+        '''
+        APIGateway.getAndValidateEntity() should raise an INTERNAL_SERVER_ERROR NspError if passed schema
+        is not a valid JSON schema
+        '''
+        event = {
+            'body': '[1]'
+        }
+        sut = APIGateway(mockLoggerFactory, event)
+        schema = {'type': 'objective'}
+        name = 'entity'
+        with self.assertRaises(NspError) as cm:
+            sut.getAndValidateEntity(schema, name)
+        self.assertEqual(cm.exception.code, 'INTERNAL_SERVER_ERROR')
+        self.assertEqual(cm.exception.message, 'Invalid entity JSON schema')
         self.assertIsInstance(cm.exception.causes, list)
         self.assertGreater(len(cm.exception.causes), 0)
         for i in range(len(cm.exception.causes)):

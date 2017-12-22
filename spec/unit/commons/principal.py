@@ -12,6 +12,14 @@ class PrincipalInit(unittest.TestCase):
         self.assertEqual(principal.__dict__, dct)
 
 
+class PrincipalStr(unittest.TestCase):
+    def test(self):
+        'Principal.__str__() should return str(__dict__)'
+        dct = {'a': 'A'}
+        principal = Principal(dct)
+        self.assertEqual(str(principal), str(principal.__dict__))
+
+
 class PrincipalIsAdmin(unittest.TestCase):
     def testFalse(self):
         'Principal.isAdmin() should return false'
@@ -41,7 +49,7 @@ class PrincipalCheckAuthorization(unittest.TestCase):
 
 class PrincipalCheckVisibility(unittest.TestCase):
     def testReturnsForAdmin(self):
-        'Principal.checkVisibility() should return if principal.isAdmin()'
+        'Principal.checkVisibility() should return if principal is admin'
         entity = {'uuid': 'uuid', 'owner': '001'}
         principal = Principal({'roles': {'ROLE_ADMIN'}})
         principal.checkVisibility(entity, 'entity', 'code')
@@ -96,3 +104,55 @@ class PrincipalCheckReadOnlyProperties(unittest.TestCase):
         newEntity = {'uuid': 'uuid1', 'owner': 'owner1', 'name': 'name2', 'created': 'created1'}
         principal = Principal({'roles': {'ROLE_THING_USER'}})
         principal.checkReadOnlyProperties(oldEntity, newEntity, ['uuid', 'created'], 'code')
+
+
+class PrincipalGetOwner(unittest.TestCase):
+    def testReturnsForAdmin(self):
+        'Principal.getOwner() should return the passed owner if principal is amdin'
+        principal = Principal({'roles': {'ROLE_ADMIN'}})
+        owner = principal.getOwner('owner')
+        self.assertEqual(owner, 'owner')
+
+    def testReturnsOrganizationIdForNonAdmin(self):
+        'Principal.getOwner() should return principal.organizationId if principal is admin and owner is None'
+        principal = Principal({'organizationId': 'organizationId', 'roles': {'ROLE_ADMIN'}})
+        owner = principal.getOwner(None)
+        self.assertEqual(owner, 'organizationId')
+
+    def testReturnsForNonAdmin(self):
+        'Principal.getOwner() should return principal.organizationId if principal is not admin and owner is None'
+        principal = Principal({'organizationId': 'organizationId', 'roles': {'ROLE_ANOTHER'}})
+        owner = principal.getOwner(None)
+        self.assertEqual(owner, 'organizationId')
+
+    def testRaisesForNonAdmin(self):
+        'Principal.getOwner() should raise if principal is not admin and owner is not None'
+        principal = Principal({'organizationId': 'organizationId', 'roles': {'ROLE_ANOTHER'}})
+        with self.assertRaises(NspError) as cm:
+            owner = principal.getOwner('owner')
+        self.assertEqual(cm.exception.code, 'FORBIDDEN')
+        self.assertEqual(cm.exception.message, 'Principal is not authorized to choose an owner')
+        self.assertEqual(cm.exception.causes, [])
+
+
+class PrincipalGetOwnerFilter(unittest.TestCase):
+    def testReturnsForAdmin(self):
+        'Principal.getOwnerFilter() should return the passed owner if principal is amdin'
+        principal = Principal({'roles': {'ROLE_ADMIN'}})
+        owner = principal.getOwnerFilter('owner')
+        self.assertEqual(owner, 'owner')
+
+    def testReturnsForNonAdmin(self):
+        'Principal.getOwnerFilter() should return principal.organizationId if principal is not admin and owner is None'
+        principal = Principal({'organizationId': 'organizationId', 'roles': {'ROLE_ANOTHER'}})
+        owner = principal.getOwnerFilter(None)
+        self.assertEqual(owner, 'organizationId')
+
+    def testRaisesForNonAdmin(self):
+        'Principal.getOwnerFilter() should raise if principal is not admin and owner is not None'
+        principal = Principal({'organizationId': 'organizationId', 'roles': {'ROLE_ANOTHER'}})
+        with self.assertRaises(NspError) as cm:
+            owner = principal.getOwnerFilter('owner')
+        self.assertEqual(cm.exception.code, 'FORBIDDEN')
+        self.assertEqual(cm.exception.message, 'Principal is not authorized to choose an owner filter')
+        self.assertEqual(cm.exception.causes, [])

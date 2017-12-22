@@ -1,26 +1,21 @@
 import json
 import jsonschema
 
-from src.commons.nsp_error import NspError
-
 CONFIG_FILE_NAME = 'config/config.json'
 SCHEMA_FILE_NAME = 'config/schema.json'
 
 
-def loadConfig():
-    try:
-        with open(CONFIG_FILE_NAME) as infile:
-            config = json.load(infile)
-        with open(SCHEMA_FILE_NAME) as infile:
-            schema = json.load(infile)
-    except Exception as error:
-        raise NspError(NspError.INTERNAL_SERVER_ERROR, 'Could not load configuration', [str(error)])
-    try:
-        jsonschema.Draft4Validator.check_schema(schema)
-    except jsonschema.SchemaError as error:
-        raise NspError(NspError.INTERNAL_SERVER_ERROR, 'Invalid configuration schema', [str(error)])
+def loadConfig(configFileName=CONFIG_FILE_NAME, schemaFileName=SCHEMA_FILE_NAME):
+    with open(schemaFileName) as infile:
+        schema = json.load(infile)
+    with open(configFileName) as infile:
+        config = json.load(infile)
+    jsonschema.Draft4Validator.check_schema(schema)
     validator = jsonschema.Draft4Validator(schema, format_checker=jsonschema.FormatChecker())
-    if not validator.is_valid(config):
+    try:
+        validator.validate(config)
+    except jsonschema.ValidationError as error:
         causes = [e.message for e in validator.iter_errors(config)]
-        raise NspError(NspError.INTERNAL_SERVER_ERROR, 'Invalid configuration', causes)
+        error.message = ', '.join(causes)
+        raise
     return config

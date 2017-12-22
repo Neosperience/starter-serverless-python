@@ -2,9 +2,9 @@ test:
   image: python:3.6
   script:
     - pip3 install -r dev_requirements.txt
-    - pycodestyle src
+    - pycodestyle src spec
     - cp config/config-ci.json config/config.json
-    - coverage run -m unittest src/spec/*/*/*.py -v
+    - coverage run -m unittest spec/*/*/*.py
     - coverage report
 
 deploy-experiments:
