@@ -167,7 +167,6 @@ class LogicUpdateThing(unittest.TestCase):
         ])
         self.repository.getThing.assert_called_once_with(uuid)
 
-
     def testReadOnlyAttributesForAdmin(self):
         '''
         ThingLogic.updateThing() should raise THING_UNPROCESSABLE NspError if writing read-only properties
@@ -203,7 +202,6 @@ class LogicUpdateThing(unittest.TestCase):
             'Cannot change read-only property "lastModified" from "2012-12-26 00:00:00" to "2014-12-26 00:00:00"'
         ])
         self.repository.getThing.assert_called_once_with(uuid)
-
 
     def testReturnsUpdatedThing(self):
         'ThingLogic.updateThing() should return the result of repository.updateThing()'
