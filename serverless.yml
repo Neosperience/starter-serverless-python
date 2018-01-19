@@ -33,24 +33,17 @@ provider:
 
 plugins:
     - serverless-python-requirements
+    - serverless-pseudo-parameters
+    - serverless-plugin-custom-domain
 
 custom:
-    accountId: ${env:SERVERLESS_ACCOUNT_ID}
+    domain:
+        name: ${env:SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME}
+        basePath: v1
     authorizer:
-        arn: arn:aws:lambda:${self:provider.region}:${self:custom.accountId}:function:nsp-identity-services-v1-${self:provider.stage}-custom-authorizer
+        arn: arn:aws:lambda:${self:provider.region}:#{AWS::AccountId}:function:nsp-identity-services-v1-${self:provider.stage}-custom-authorizer
         resultTtlInSeconds: 300
         identitySource: method.request.header.Authorization
-
-resources:
-    Resources:
-        BasePathMapping:
-            Type: "AWS::ApiGateway::BasePathMapping"
-            Properties:
-                BasePath: v1
-                DomainName: ${env:SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME}
-                RestApiId:
-                    Ref: ApiGatewayRestApi
-                Stage: ${self:provider.stage}
 
 functions:
     create-thing:

@@ -16,7 +16,6 @@ deploy-experiments:
   variables:
     AWS_ACCESS_KEY_ID: $EXPERIMENTS_AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY: $EXPERIMENTS_AWS_SECRET_ACCESS_KEY
-    SERVERLESS_ACCOUNT_ID: $EXPERIMENTS_AWS_ACCOUNT_ID
     SERVERLESS_STAGE: dev
     SERVERLESS_REGION: eu-west-1
     SERVERLESS_CUSTOM_DOMAIN_NAME_BASE_DOMAIN_NAME: starter-python.experiments.neosperiencecloud.com
@@ -26,9 +25,7 @@ deploy-experiments:
   script:
     - apt-get update -y && apt-get install gettext-base -y
     - envsubst < "config/config.json.dist" > "config/config.json"
-    - npm run sls -- package
-    - node scripts/adjust-serverless-state.js
-    - npm run sls -- deploy --package .serverless
+    - npm run sls -- deploy
     - rm config/config.json
   only:
     - master
