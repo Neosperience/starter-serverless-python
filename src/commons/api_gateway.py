@@ -82,7 +82,6 @@ class APIGateway:
             port = ':' + port
         host = self.eventGet('headers.Host', 'UNKNOWN_HOST')
         contextPath = ''
-        # add stage as context path when calling API directly:
         if API_GATEWAY_URL_MATCHER.search(host):
             contextPath = '/' + self.eventGet('requestContext.stage', 'UNKNOWN_STAGE')
         path = self.eventGet('path', '/UNKNOWN_PATH')
@@ -102,29 +101,25 @@ class APIGateway:
         principal['roles'] = set(principal['roles'])
         return Principal(principal)
 
-    def getPathParameter(self, name, required, validator=None):
-        param = self.eventGet('pathParameters.{0}'.format(name))
-        if required and not param:
-            raise HttpError(HttpError.BAD_REQUEST, 'Missing path parameter "{0}"'.format(name))
+    def getParameter(self, origin, basePath, name, required, validator):
+        param = self.eventGet('{0}.{1}'.format(basePath, name))
+        if required and param is None:
+            raise HttpError(HttpError.BAD_REQUEST, 'Missing {0} "{1}"'.format(origin, name))
         if (validator):
-            validator(param)
+            try:
+                validator(param)
+            except Exception as error:
+                raise HttpError(HttpError.BAD_REQUEST, 'Invalid {0} "{1}"'.format(origin, name), [error.__str__()])
         return param
 
-    def getQueryStringParameter(self, name, required, validator=None):
-        param = self.eventGet('queryStringParameters.{0}'.format(name))
-        if required and not param:
-            raise HttpError(HttpError.BAD_REQUEST, 'Missing query string parameter "{0}"'.format(name))
-        if (validator):
-            validator(param)
-        return param
+    def getPathParameter(self, name, required=False, validator=None):
+        return self.getParameter('path parameter', 'pathParameters', name, required, validator)
 
-    def getHeader(self, name, required, validator=None):
-        header = self.eventGet('headers.{0}'.format(name))
-        if required and not header:
-            raise HttpError(HttpError.BAD_REQUEST, 'Missing header "{0}"'.format(name))
-        if (validator):
-            validator(header)
-        return header
+    def getQueryStringParameter(self, name, required=False, validator=None):
+        return self.getParameter('query string parameter', 'queryStringParameters', name, required, validator)
+
+    def getHeader(self, name, required=False, validator=None):
+        return self.getParameter('header', 'headers', name, required, validator)
 
     def getAndValidateEntity(self, schema, name):
         contentType = self.eventGet('headers.Content-Type')
