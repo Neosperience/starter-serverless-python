@@ -186,154 +186,103 @@ class APIGatewayGetAndValidatePrincipal(unittest.TestCase):
         self.assertEqual(principal.roles, set(p['roles']))
 
 
-class APIGatewayGetPathParameter(unittest.TestCase):
+class APIGatewayGetParameter(unittest.TestCase):
     def testMissingRequired(self):
-        'APIGateway.getPathParameter() should raise a 400 HttpError if the parameter is missing and required'
+        'APIGateway.getParameter() should raise a 400 HttpError if the parameter is missing and required'
         event = {}
         sut = APIGateway(mockLoggerFactory, event)
         with self.assertRaises(HttpError) as cm:
-            sut.getPathParameter('p', True)
+            sut.getParameter('param', 'basePath', 'p', True, None)
         self.assertEqual(cm.exception.statusCode, 400)
         self.assertEqual(cm.exception.statusReason, 'Bad request')
-        self.assertEqual(cm.exception.message, 'Missing path parameter "p"')
+        self.assertEqual(cm.exception.message, 'Missing param "p"')
 
     def testMissingNotRequired(self):
-        'APIGateway.getPathParameter() should return None if the parameter is missing and not required'
+        'APIGateway.getParameter() should return None if the parameter is missing and not required'
         event = {}
         sut = APIGateway(mockLoggerFactory, event)
-        param = sut.getPathParameter('p', False)
+        param = sut.getParameter('param', 'basePath', 'p', False, None)
         self.assertIsNone(param)
 
     def testValidateMissing(self):
-        'APIGateway.getPathParameter() should call the validator if passed [with missing param]'
+        'APIGateway.getParameter() should call the validator if passed [with missing param]'
         event = {}
         sut = APIGateway(mockLoggerFactory, event)
         validator = MagicMock()
-        sut.getPathParameter('p', False, validator)
+        sut.getParameter('param', 'basePath', 'p', False, validator)
         validator.assert_called_once_with(None)
 
     def testValidateFound(self):
-        'APIGateway.getPathParameter() should call the validator if passed [with found param]'
+        'APIGateway.getParameter() should call the validator if passed [with found param]'
         event = {
-            'pathParameters': {
-                'p': 'param'
+            'basePath': {
+                'p': 'value'
             }
         }
         sut = APIGateway(mockLoggerFactory, event)
         validator = MagicMock()
-        sut.getPathParameter('p', False, validator)
-        validator.assert_called_once_with('param')
+        sut.getParameter('param', 'basePath', 'p', False, validator)
+        validator.assert_called_once_with('value')
 
-    def testReturn(self):
-        'APIGateway.getPathParameter() should return the parameter'
+    def testInvalid(self):
+        'APIGateway.getParameter() should throw a 400 HttpError with the error of the validator as cause'
         event = {
-            'pathParameters': {
-                'p': 'param'
+            'basePath': {
+                'p': 'value'
             }
         }
         sut = APIGateway(mockLoggerFactory, event)
-        param = sut.getPathParameter('p', False)
-        self.assertEqual(param, 'param')
+        validator = MagicMock()
+        validator.side_effect = Exception('error message')
+        with self.assertRaises(HttpError) as cm:
+            sut.getParameter('param', 'basePath', 'p', False, validator)
+        validator.assert_called_once_with('value')
+        self.assertEqual(cm.exception.statusCode, 400)
+        self.assertEqual(cm.exception.message, 'Invalid param "p"')
+        self.assertEqual(cm.exception.causes, ['error message'])
+
+    def testReturn(self):
+        'APIGateway.getParameter() should return the parameter'
+        event = {
+            'basePath': {
+                'p': 'value'
+            }
+        }
+        sut = APIGateway(mockLoggerFactory, event)
+        param = sut.getParameter('param', 'basePath', 'p', False, None)
+        self.assertEqual(param, 'value')
+
+
+class APIGatewayGetPathParameter(unittest.TestCase):
+    def testRightParameters(self):
+        'APIGateway.getPathParameter() should call APIGateway.getParameter() with the right parameters'
+        event = {}
+        sut = APIGateway(mockLoggerFactory, event)
+        sut.getParameter = MagicMock()
+        sut.getPathParameter('p', 'required', 'validator')
+        sut.getParameter.assert_called_once_with('path parameter', 'pathParameters', 'p', 'required', 'validator')
 
 
 class APIGatewayGetQueryStringParameter(unittest.TestCase):
-    def testMissingRequired(self):
-        'APIGateway.getQueryStringParameter() should raise a 400 HttpError if the parameter is missing and required'
+    def testRightParameters(self):
+        'APIGateway.getQueryStringParameter() should call APIGateway.getParameter() with the right parameters'
         event = {}
         sut = APIGateway(mockLoggerFactory, event)
-        with self.assertRaises(HttpError) as cm:
-            sut.getQueryStringParameter('p', True)
-        self.assertEqual(cm.exception.statusCode, 400)
-        self.assertEqual(cm.exception.statusReason, 'Bad request')
-        self.assertEqual(cm.exception.message, 'Missing query string parameter "p"')
-
-    def testMissingNotRequired(self):
-        'APIGateway.getQueryStringParameter() should return None if the parameter is missing and not required'
-        event = {}
-        sut = APIGateway(mockLoggerFactory, event)
-        param = sut.getQueryStringParameter('p', False)
-        self.assertIsNone(param)
-
-    def testValidateMissing(self):
-        'APIGateway.getQueryStringParameter() should call the validator if passed [with missing param]'
-        event = {}
-        sut = APIGateway(mockLoggerFactory, event)
-        validator = MagicMock()
-        sut.getQueryStringParameter('p', False, validator)
-        validator.assert_called_once_with(None)
-
-    def testValidateFound(self):
-        'APIGateway.getQueryStringParameter() should call the validator if passed [with found param]'
-        event = {
-            'queryStringParameters': {
-                'p': 'param'
-            }
-        }
-        sut = APIGateway(mockLoggerFactory, event)
-        validator = MagicMock()
-        sut.getQueryStringParameter('p', False, validator)
-        validator.assert_called_once_with('param')
-
-    def testReturn(self):
-        'APIGateway.getQueryStringParameter() should return the parameter'
-        event = {
-            'queryStringParameters': {
-                'p': 'param'
-            }
-        }
-        sut = APIGateway(mockLoggerFactory, event)
-        param = sut.getQueryStringParameter('p', False)
-        self.assertEqual(param, 'param')
+        sut.getParameter = MagicMock()
+        sut.getQueryStringParameter('p', 'required', 'validator')
+        sut.getParameter.assert_called_once_with(
+            'query string parameter', 'queryStringParameters', 'p', 'required', 'validator'
+        )
 
 
 class APIGatewayGetHeader(unittest.TestCase):
-    def testMissingRequired(self):
-        'APIGateway.getHeader() should raise a 400 HttpError if the header is missing and required'
+    def testRightParameters(self):
+        'APIGateway.getHeader() should call APIGateway.getParameter() with the right parameters'
         event = {}
         sut = APIGateway(mockLoggerFactory, event)
-        with self.assertRaises(HttpError) as cm:
-            sut.getHeader('h', True)
-        self.assertEqual(cm.exception.statusCode, 400)
-        self.assertEqual(cm.exception.statusReason, 'Bad request')
-        self.assertEqual(cm.exception.message, 'Missing header "h"')
-
-    def testMissingNotRequired(self):
-        'APIGateway.getHeader() should return None if the header is missing and not required'
-        event = {}
-        sut = APIGateway(mockLoggerFactory, event)
-        param = sut.getHeader('h', False)
-        self.assertIsNone(param)
-
-    def testValidateMissing(self):
-        'APIGateway.getHeader() should call the validator if passed [with missing header]'
-        event = {}
-        sut = APIGateway(mockLoggerFactory, event)
-        validator = MagicMock()
-        sut.getHeader('h', False, validator)
-        validator.assert_called_once_with(None)
-
-    def testValidateFound(self):
-        'APIGateway.getHeader() should call the validator if passed [with found header]'
-        event = {
-            'headers': {
-                'h': 'param'
-            }
-        }
-        sut = APIGateway(mockLoggerFactory, event)
-        validator = MagicMock()
-        sut.getHeader('h', False, validator)
-        validator.assert_called_once_with('param')
-
-    def testReturn(self):
-        'APIGateway.getHeader() should return the header'
-        event = {
-            'headers': {
-                'h': 'header'
-            }
-        }
-        sut = APIGateway(mockLoggerFactory, event)
-        header = sut.getHeader('h', False)
-        self.assertEqual(header, 'header')
+        sut.getParameter = MagicMock()
+        sut.getHeader('p', 'required', 'validator')
+        sut.getParameter.assert_called_once_with('header', 'headers', 'p', 'required', 'validator')
 
 
 class APIGatewayCreateLocationHeader(unittest.TestCase):
